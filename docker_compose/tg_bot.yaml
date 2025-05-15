@@ -1,0 +1,9 @@
+services:
+  bot:
+    build:
+      context: ..
+      dockerfile: backend/Dockerfile
+    container_name: bot
+    command: python -m src.bot.run
+    env_file:
+      - ../.env
