@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from src.presentation.controllers.v1.main import main_router
+from src.presentation.controllers.v1.main import router as main_router
 
 
 

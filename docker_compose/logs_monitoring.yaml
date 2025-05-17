@@ -20,6 +20,7 @@ services:
       - "3100:3100"
     volumes:
       - ./loki-config.yaml:/etc/loki/local-config.yaml
+
     networks:
       - backend
 
@@ -52,6 +53,7 @@ services:
 volumes:
   grafanadata:
   prometheusdata:
+
 
 networks:
   backend:
