@@ -2,28 +2,15 @@ from pydantic import BaseModel, ConfigDict, Field
 from datetime import datetime
 from src.domain.user.value_object import TelegramId
 from src.domain.balance.value_object import Balance
-from enum import StrEnum
 
-
-class AuthTypeSchema(StrEnum):
-    REGISTER = 'REGISTER'
-    LOGIN = 'LOGIN'
-
-
-class SendCodeSchema(BaseModel):
-    telegram_id: int
-    auth_type: AuthTypeSchema
 
 
 class CheckCodeSchema(BaseModel):
-    telegram_id: int
+    telegram_id: int = Field(gt=0)
     confirmation_code: int
 
 
-class LoginUserWithCode(CheckCodeSchema):
-    ...
-
-class RegisterUserSchema(BaseModel):
+class SendCodeSchema(BaseModel):
     telegram_id: int = Field(gt=0)
 
 
