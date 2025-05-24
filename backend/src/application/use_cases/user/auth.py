@@ -6,7 +6,7 @@ from src.infrastructure.broker_messages.rabbitmq.publisher import publish
 from src.presentation.schemas.user import CheckCodeSchema
 from src.application.services.code import SendCodeService, CheckCodeService
 from datetime import datetime
-import datetime as dt
+from src.const import MOSCOW_TZ
 
 
 logger = logging.getLogger(__name__)
@@ -33,7 +33,9 @@ class RegisterUserUseCase:
         logger.info(f'Новый пользователь {telegram_id} зарегистрирован')
         await publish(
             chat_id=telegram_id,
-            text='Вы успешно зарегистрировались на сервисе BotRental'
+            text=f'Вы успешно зарегистрировались на сервисе BotRental\n{
+                datetime.strftime(new_user.created_at, '%d.%m.%Y %H:%M')
+            }'
         )
         logger.info(f'Пользователю {telegram_id} направлено уведомление в Telegram')
         return created_user
@@ -63,10 +65,11 @@ class VerifyCodeUseCase:
 
 
         user: UserEntity | None = await self._login_use_case.execute(schema.telegram_id)
-        
+
         if user:
             logger.info(f'Пользователь {user.telegram_id.to_raw()} совершил вход.')
-            current_datetime: datetime = datetime.now(dt.timezone.utc)
+            current_datetime: datetime = datetime.now(tz=MOSCOW_TZ)
+
             await publish(
                 chat_id=user.telegram_id.to_raw(),
                 text=f'Вы успешно вошли на сервис BotRental\n{datetime.strftime(current_datetime, '%d.%m.%Y %H:%M')}'
