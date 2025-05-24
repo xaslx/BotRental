@@ -4,7 +4,7 @@ import random
 from src.infrastructure.broker_messages.rabbitmq.publisher import publish
 from abc import ABC
 import logging
-from src.domain.user.exception import InvalidCodeException
+from src.domain.user.exception import InvalidCodeException, TooManyCodeRequestsException
 
 
 logger = logging.getLogger(__name__)
@@ -18,7 +18,7 @@ async def send_and_cache(telegram_id: int, cache_service: BaseCacheService) -> b
     await publish(chat_id=telegram_id, text=f'Ваш код: {code}')
     logger.info(f'Код: {code} отправлен пользователю в телеграм: {telegram_id}')
 
-    await cache_service.set_with_ttl(key=f'{telegram_id}:code', value=code, ttl_seconds=600)
+    await cache_service.set_with_ttl(key=f'{telegram_id}:code', value=code, ttl_seconds=300)
     logger.info(f'Код записан в редис')
 
     return True
@@ -29,11 +29,16 @@ class SendCodeService(ABC):
     _cache_service: BaseCacheService
 
     async def execute(self, telegram_id: int) -> bool:
+        code: str = await self._cache_service.get(f'{telegram_id}:code')
+
+        if code:
+            raise TooManyCodeRequestsException()
+        
         return await send_and_cache(telegram_id=telegram_id, cache_service=self._cache_service)
 
 
 @dataclass
-class CheckCodeService:
+class CheckCodeService: 
     _cache_service: BaseCacheService
 
     async def execute(self, code: int, telegram_id: int) -> bool:
