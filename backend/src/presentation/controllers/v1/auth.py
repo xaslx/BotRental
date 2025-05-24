@@ -23,6 +23,10 @@ router: APIRouter = APIRouter()
             'model': ErrorSchema,
             'description': 'Invalid request',
         },
+        status.HTTP_429_TOO_MANY_REQUESTS: {
+            'model': ErrorSchema,
+            'description': 'Please wait 5 minutes before requesting a new code',
+        },
     },
 )
 @inject
