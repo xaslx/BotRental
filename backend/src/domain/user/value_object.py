@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from src.domain.common.value_object import BaseValueObject
-from src.domain.user.exception import InvalidTelegramIDTypeError, InvalidTelegramIDValueError
+from src.domain.user.exception import InvalidTelegramIDTypeException, InvalidTelegramIDValueException
 
 
 
@@ -10,9 +10,9 @@ class TelegramId(BaseValueObject):
     def validate(self):
 
         if not isinstance(self.value, int):
-            raise InvalidTelegramIDTypeError()
+            raise InvalidTelegramIDTypeException()
         if self.value <= 0:
-            raise InvalidTelegramIDValueError()
+            raise InvalidTelegramIDValueException()
 
     def __eq__(self, value: 'TelegramId') -> bool:
         if not isinstance(value, TelegramId):

@@ -49,7 +49,7 @@ class UserNotAuthenticatedException(DomainErrorException):
 
 
 @dataclass(eq=False)
-class InvalidTelegramIDTypeError(DomainErrorException):
+class InvalidTelegramIDTypeException(DomainErrorException):
     status_code: int = status.HTTP_422_UNPROCESSABLE_ENTITY
 
     @property
@@ -57,7 +57,7 @@ class InvalidTelegramIDTypeError(DomainErrorException):
         return 'Telegram ID должен быть в виде целого числа.'
 
 @dataclass(eq=False)
-class InvalidTelegramIDValueError(DomainErrorException):
+class InvalidTelegramIDValueException(DomainErrorException):
     status_code: int = status.HTTP_422_UNPROCESSABLE_ENTITY
 
     @property
@@ -66,9 +66,18 @@ class InvalidTelegramIDValueError(DomainErrorException):
     
 
 @dataclass(eq=False)
-class InvalidCodeError(DomainErrorException):
+class InvalidCodeException(DomainErrorException):
     status_code: int = status.HTTP_400_BAD_REQUEST
 
     @property
     def message(self) -> str:
         return 'Неверный код. Попробуйте еще раз.'
+    
+
+@dataclass(eq=False)
+class TooManyCodeRequestsException(DomainErrorException):
+    status_code: int = status.HTTP_429_TOO_MANY_REQUESTS
+    
+    @property
+    def message(self) -> str:
+        return 'Код уже был отправлен, попробуйте через 5 минут'
