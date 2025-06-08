@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from fastapi import HTTPException, status
+from fastapi import status
 
 
 @dataclass(eq=False)

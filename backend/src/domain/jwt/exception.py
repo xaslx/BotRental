@@ -14,7 +14,7 @@ class TokenExpiredException(DomainErrorException):
 
 @dataclass(eq=False)
 class TokenAbsentException(DomainErrorException):
-    status_code = status.HTTP_401_UNAUTHORIZED
+    status_code: int = status.HTTP_401_UNAUTHORIZED
 
     @property
     def message(self) -> str:
@@ -23,7 +23,7 @@ class TokenAbsentException(DomainErrorException):
 
 @dataclass(eq=False)
 class IncorrectTokenException(DomainErrorException):
-    status_code = status.HTTP_401_UNAUTHORIZED
+    status_code: int = status.HTTP_401_UNAUTHORIZED
 
     @property
     def message(self) -> str:

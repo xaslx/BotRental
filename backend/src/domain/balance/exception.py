@@ -10,7 +10,7 @@ class BalanceException(DomainErrorException):
 
 @dataclass(eq=False)
 class NegativeBalanceError(BalanceException):
-    status_code = status.HTTP_400_BAD_REQUEST
+    status_code: int = status.HTTP_400_BAD_REQUEST
 
     @property
     def message(self) -> str:
@@ -19,7 +19,7 @@ class NegativeBalanceError(BalanceException):
 
 @dataclass(eq=False)
 class InsufficientFundsError(BalanceException):
-    status_code = status.HTTP_402_PAYMENT_REQUIRED
+    status_code: int = status.HTTP_402_PAYMENT_REQUIRED
 
     @property
     def message(self) -> str:
@@ -28,7 +28,7 @@ class InsufficientFundsError(BalanceException):
 
 @dataclass(eq=False)
 class InvalidDepositAmountError(BalanceException):
-    status_code = status.HTTP_400_BAD_REQUEST
+    status_code: int = status.HTTP_400_BAD_REQUEST
 
     @property
     def message(self) -> str:
@@ -37,7 +37,7 @@ class InvalidDepositAmountError(BalanceException):
 
 @dataclass(eq=False)
 class InvalidWithdrawalAmountError(BalanceException):
-    status_code = status.HTTP_400_BAD_REQUEST
+    status_code: int = status.HTTP_400_BAD_REQUEST
 
     @property
     def message(self) -> str:
