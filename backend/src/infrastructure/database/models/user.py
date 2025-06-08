@@ -9,15 +9,15 @@ class User(Base):
     __tablename__ = 'users'
 
     telegram_id: Mapped[int]
-    is_active: Mapped[bool] = mapped_column(default=True)
-    is_deleted: Mapped[bool] = mapped_column(default=False)
-    balance: Mapped[int] = mapped_column(default=0)
+    is_active: Mapped[bool]
+    is_deleted: Mapped[bool]
+    balance: Mapped[int]
 
     def to_entity(self) -> UserEntity:
-        print('ssss')
         return UserEntity(
             id=self.id,
             created_at=self.created_at,
+            updated_at=self.updated_at,
             telegram_id=TelegramId(value=self.telegram_id),
             is_active=self.is_active,
             is_deleted=self.is_deleted,
@@ -29,6 +29,7 @@ class User(Base):
         return cls(
             id=entity.id,
             created_at=entity.created_at,
+            updated_at=entity.updated_at,
             telegram_id=entity.telegram_id.to_raw(),
             is_active=entity.is_active,
             is_deleted=entity.is_deleted,
