@@ -33,8 +33,10 @@ class SQLAlchemyUserRepository(BaseUserRepository):
             select(User).where(User.telegram_id == telegram_id)
         )
         user: User | None = result.scalar_one_or_none()
+
         if user:
             return user.to_entity()
+        
         return None
     
     async def update(self, entity: UserEntity) -> UserEntity:
@@ -44,12 +46,10 @@ class SQLAlchemyUserRepository(BaseUserRepository):
         )
         user_model = result.scalar_one()
         
-        # Обновляем поля ORM-модели из entity
         user_model.is_deleted = entity.is_deleted
         user_model.is_active = entity.is_active
-        user_model.balance = entity.balance.value  # предполагая, что Balance.value хранит число
-        
-        # Сохраняем изменения
+        user_model.balance = entity.balance.value
+
         await self._session.commit()
         await self._session.refresh(user_model)
         
