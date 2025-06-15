@@ -2,7 +2,7 @@ from pydantic import BaseModel, ConfigDict, Field
 from datetime import datetime
 from src.domain.user.value_object import TelegramId
 from src.domain.balance.value_object import Balance
-
+from src.domain.user.entity import Role
 
 
 class CheckCodeSchema(BaseModel):
@@ -19,5 +19,6 @@ class UserOutSchema(BaseModel):
     created_at: datetime
     telegram_id: TelegramId
     balance: Balance
-    
+    role: Role
+
     model_config = ConfigDict(from_attributes=True)
