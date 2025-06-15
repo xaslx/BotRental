@@ -1,8 +1,15 @@
-from src.presentation.schemas.user import UserOutSchema
+from enum import StrEnum
 from src.domain.common.entity import BaseEntity
 from dataclasses import dataclass, field
 from src.domain.user.value_object import TelegramId
 from src.domain.balance.value_object import Balance
+
+
+
+
+class Role(StrEnum):
+    USER = 'user'
+    ADMIN = 'admin'
 
 
 @dataclass
@@ -11,6 +18,7 @@ class UserEntity(BaseEntity):
     balance: Balance = field(default=Balance(value=0))
     is_active: bool = field(default=True)
     is_deleted: bool = field(default=False)
+    role: Role = field(default=Role.USER)
 
     @classmethod
     def create_user(
@@ -29,7 +37,7 @@ class UserEntity(BaseEntity):
     def activate(self) -> None:
         self.is_active = True
 
-    def deactive(self) -> None:
+    def deactivate(self) -> None:
         self.is_active = False
 
     def delete(self) -> None:

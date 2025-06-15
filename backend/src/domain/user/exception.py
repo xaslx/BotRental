@@ -22,7 +22,7 @@ class UserNotFoundException(DomainErrorException):
 
 
 @dataclass(eq=False)
-class NotAccessErrorException(DomainErrorException):
+class PermissionDeniedException(DomainErrorException):
     status_code: int = status.HTTP_403_FORBIDDEN 
 
     @property
