@@ -1,19 +1,29 @@
 from dataclasses import dataclass
 from src.domain.user.entity import UserEntity
-from src.presentation.schemas.user import UserOutSchema
+from src.presentation.schemas.user import UserAdminViewSchema
 from src.infrastructure.repositories.user.base import BaseUserRepository
+import logging
+
+
+logger = logging.getLogger(__name__)
+
 
 
 @dataclass
 class GetAllUsersUseCase:
     _user_repository: BaseUserRepository
 
-    async def execute(self) -> list[UserOutSchema] | None:
+    async def execute(self, admin: UserEntity) -> list[UserAdminViewSchema] | None:
 
         users: list[UserEntity] | None = await self._user_repository.get_all_users()
+        
         if not users:
             return None
-        return [UserOutSchema.model_validate(user) for user in users]
+        
+        
+        logger.info(f'Администратор {admin.telegram_id.value} получил список пользователей')
+
+        return [UserAdminViewSchema.model_validate(user) for user in users]
 
 
 
@@ -21,11 +31,13 @@ class GetAllUsersUseCase:
 class GetUserByTelegramId:
     _user_repository: BaseUserRepository
 
-    async def execute(self, telegram_id: int) -> UserOutSchema | None:
+    async def execute(self, telegram_id: int, admin: UserEntity) -> UserAdminViewSchema | None:
 
         user: UserEntity | None = await self._user_repository.get_user_by_telegram_id(telegram_id=telegram_id)
 
         if not user:
             return None
         
-        return UserOutSchema.model_validate(user)
+        logger.info(f'Администратор {admin.telegram_id.to_raw()} получил пользователя: {user.telegram_id.to_raw()}')
+
+        return UserAdminViewSchema.model_validate(user)
