@@ -1,7 +1,11 @@
-from dishka import Provider, Scope, provide, from_context, decorate
-from fastapi import HTTPException, Request, status
+from dishka import Provider, Scope, provide, from_context
+from fastapi import Request
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from typing import AsyncIterable
+from src.application.use_cases.admin.users.unblock_user import UnblockUserUseCase
+from src.application.use_cases.admin.users.block_user import BlockUserUseCase
+from src.application.use_cases.admin.users.update_role import UpdateUserRoleUseCase
+from src.application.use_cases.admin.users.delete_user import DeleteUserUseCase
 from src.application.use_cases.admin.users.get_users import GetAllUsersUseCase, GetUserByTelegramId
 from src.domain.user.entity import UserEntity
 from src.application.services.auth import AuthServiceImpl, BaseAuthService
@@ -9,7 +13,8 @@ from src.application.services.jwt import JWTService, JWTServiceImpl
 from src.config import Config
 from src.infrastructure.database.postgresql import new_session_maker
 from src.application.use_cases.user.auth import RefreshTokenUseCase, RegisterUserUseCase, LoginUserUseCase, VerifyCodeUseCase, SendCodeUseCase
-from src.infrastructure.repositories.user.base import BaseUserRepository
+from src.infrastructure.repositories.user.base import BaseBlockedUserRepository, BaseUserRepository
+from src.infrastructure.repositories.user.blocked_user import BlockedUserRepository
 from src.infrastructure.repositories.user.sqlalchemy import SQLAlchemyUserRepository
 from src.infrastructure.cache.base import BaseCacheService
 from src.infrastructure.cache.redis import RedisCacheService
@@ -38,6 +43,11 @@ class AppProvider(Provider):
     @provide(scope=Scope.REQUEST)
     def get_user_repository(self, session: AsyncSession) -> BaseUserRepository:
         return SQLAlchemyUserRepository(_session=session)
+    
+    @provide(scope=Scope.REQUEST)
+    def get_blocked_user_repository(self, session: AsyncSession) -> BaseBlockedUserRepository:
+
+        return BlockedUserRepository(_session=session)
 
 
     #USE CASES
@@ -109,7 +119,49 @@ class AppProvider(Provider):
     ) -> GetUserByTelegramId:
         
         return GetUserByTelegramId(_user_repository=user_repository)
+    
+    @provide(scope=Scope.REQUEST)
+    def get_delete_user_use_case(
+        self,
+        user_repository: BaseUserRepository,
+    ) -> DeleteUserUseCase:
+        
+        return DeleteUserUseCase(_user_repository=user_repository)
+    
 
+    @provide(scope=Scope.REQUEST)
+    def get_update_user_role_use_case(
+        self,
+        user_repository: BaseUserRepository,
+    ) -> UpdateUserRoleUseCase:
+        
+        return UpdateUserRoleUseCase(_user_repository=user_repository)
+
+
+    @provide(scope=Scope.REQUEST)
+    def get_block_user_use_case(
+        self,
+        user_repository: BaseUserRepository,
+        blocked_user_repository: BaseBlockedUserRepository,
+    ) -> BlockUserUseCase:
+        
+        return BlockUserUseCase(
+            _user_repository=user_repository,
+            _blocked_user_repository=blocked_user_repository,
+        )
+    
+    @provide(scope=Scope.REQUEST)
+    def get_unblock_user_use_case(
+        self,
+        user_repository: BaseUserRepository,
+        blocked_user_repository: BaseBlockedUserRepository,
+    ) -> UnblockUserUseCase:
+        
+        return UnblockUserUseCase(
+            _user_repository=user_repository,
+            _blocked_user_repository=blocked_user_repository,
+        )
+        
 
     #SERVICES
     @provide(scope=Scope.REQUEST)
