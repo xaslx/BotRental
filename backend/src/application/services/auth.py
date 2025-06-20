@@ -60,7 +60,8 @@ class AuthServiceImpl(BaseAuthService):
         
         if cached_user:
             try:
-                return UserEntity(**orjson.loads(cached_user))
+                user_dict = orjson.loads(cached_user)
+                return UserEntity.from_dict(user_dict)
             except orjson.JSONDecodeError:
                 logger.error('ORJSON error when loading cached user')
 
@@ -71,7 +72,7 @@ class AuthServiceImpl(BaseAuthService):
 
         await self._cache_service.set_with_ttl(
             key=cache_key,
-            value=orjson.dumps(user),
+            value=orjson.dumps(user.to_dict()),
             ttl_seconds=600
         )
 
