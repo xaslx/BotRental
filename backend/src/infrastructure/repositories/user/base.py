@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import TypeVar, Generic
+from src.domain.user.blocked_user import BlockedUserEntity
 from src.domain.user.entity import UserEntity
 from src.infrastructure.database.models.base import Base
 
@@ -22,9 +23,34 @@ class BaseUserRepository(ABC, Generic[T]):
 
 
     @abstractmethod
+    async def get_all_users(self) -> list[UserEntity] | None:
+        ...
+
+
+    @abstractmethod
     async def update(self, entity: UserEntity) -> UserEntity:
         ...
 
     @abstractmethod
     async def delete(self, entity: UserEntity) -> None:
+        ...
+
+
+@dataclass
+class BaseBlockedUserRepository(ABC, Generic[T]):
+
+    @abstractmethod
+    async def add(self, block: BlockedUserEntity) -> None:
+        ...
+
+    @abstractmethod
+    async def update(self, block: BlockedUserEntity) -> None:
+        ...
+
+    @abstractmethod
+    async def get_active_block_by_user_id(self, user_id: int) -> BlockedUserEntity | None:
+        ...
+
+    @abstractmethod
+    async def get_all_by_user_id(self, user_id: int) -> list[BlockedUserEntity]:
         ...
