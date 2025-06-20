@@ -1,12 +1,16 @@
 from fastapi import APIRouter, status
 from dishka.integrations.fastapi import inject, FromDishka as Depends
+from src.application.use_cases.admin.users.unblock_user import UnblockUserUseCase
+from src.domain.user.blocked_user import BlockedUserEntity
+from src.application.use_cases.admin.users.block_user import BlockUserUseCase
 from src.application.use_cases.admin.users.update_role import UpdateUserRoleUseCase
 from src.application.use_cases.admin.users.delete_user import DeleteUserUseCase
 from src.domain.user.entity import UserEntity
-from src.presentation.schemas.user import UpdateUserRole, UserAdminViewSchema, UserOutSchema
+from src.presentation.schemas.user import UpdateUserRole, UserAdminViewSchema, UserBlockSchema, BlockedUserOutSchema
 from src.application.use_cases.admin.users.get_users import GetAllUsersUseCase, GetUserByTelegramId
 from src.presentation.decorators.check_role import check_role
 from src.presentation.schemas.error import ErrorSchema
+from src.presentation.schemas.success import SuccessResponse
 
 
 router: APIRouter = APIRouter()
@@ -28,8 +32,8 @@ async def get_all_users(
     user: Depends[UserEntity],
 ) -> list[UserAdminViewSchema] | None:
     
-    users: list[UserAdminViewSchema] = await use_case.execute(admin=user)
-    return users
+    users: list[UserEntity] = await use_case.execute(admin=user)
+    return [UserAdminViewSchema.model_validate(user) for user in users]
 
 
 @router.get(
@@ -47,9 +51,11 @@ async def get_user_by_id(
     telegram_id: int,
     user: Depends[UserEntity],
     use_case: Depends[GetUserByTelegramId],
-) -> UserAdminViewSchema | None:
-    
-    return await use_case.execute(telegram_id=telegram_id, admin=user)
+) -> UserAdminViewSchema | None: 
+
+    user: UserEntity | None = await use_case.execute(telegram_id=telegram_id, admin=user)
+    return UserAdminViewSchema.model_validate(user)
+
 
 
 @router.delete(
@@ -108,3 +114,56 @@ async def update_user_role(
     
     user: UserEntity = await use_case.execute(telegram_id=telegram_id, admin=user, new_role=new_role)
     return UserAdminViewSchema.model_validate(user)
+
+
+@router.post(
+    '/users/{telegram_id}/block',
+    description='Эндпоинт для блокировки пользователя',
+    status_code=status.HTTP_200_OK,
+    responses={
+        status.HTTP_200_OK: {
+            'model': BlockedUserOutSchema,
+            'description': 'User was successfully blocked',
+        },
+        status.HTTP_404_NOT_FOUND: {
+            'model': ErrorSchema,
+            'description': 'User with the given telegram_id not found',
+        },
+        status.HTTP_400_BAD_REQUEST: {
+            'model': ErrorSchema,
+            'description': 'Invalid block data or user is already blocked',
+        },
+        status.HTTP_403_FORBIDDEN: {
+            'model': ErrorSchema,
+            'description': 'Insufficient permissions to perform this action',
+        },
+    },
+)
+@inject
+@check_role(allowed_roles=['dev', 'admin'])
+async def block_user(
+    telegram_id: int,
+    block_schema: UserBlockSchema,
+    user: Depends[UserEntity],
+    use_case: Depends[BlockUserUseCase],
+) -> BlockedUserOutSchema:
+    
+    block: BlockedUserEntity = await use_case.execute(telegram_id=telegram_id, block_schema=block_schema, admin=user)
+    return BlockedUserOutSchema.model_validate(block)
+
+
+@router.post(
+    '/users/{telegram_id}/unblock',
+    description='Эндпоинт для разблокировки пользователя',
+    status_code=status.HTTP_200_OK,
+)
+@inject
+@check_role(allowed_roles=['dev', 'admin'])
+async def unblock_user(
+    telegram_id: int,
+    user: Depends[UserEntity],
+    use_case: Depends[UnblockUserUseCase],
+) -> SuccessResponse:
+    
+    await use_case.execute(telegram_id=telegram_id, admin=user)
+    return SuccessResponse(message='Пользователь успешно разблокирован')
