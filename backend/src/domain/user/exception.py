@@ -80,4 +80,31 @@ class TooManyCodeRequestsException(DomainErrorException):
     
     @property
     def message(self) -> str:
-        return 'Код уже был отправлен, попробуйте через 5 минут'
+        return 'Код уже был отправлен, попробуйте через 5 минут.'
+    
+@dataclass(eq=False)
+class InvalidBlockDurationException(DomainErrorException):
+    status_code: int = status.HTTP_400_BAD_REQUEST
+    
+    @property
+    def message(self) -> str:
+        return 'Количество дней должно быть больше 1.'
+    
+
+@dataclass(eq=False)
+class AlreadyBlockedException(DomainErrorException):
+    status_code: int = status.HTTP_400_BAD_REQUEST
+    
+    @property
+    def message(self) -> str:
+        return 'Пользователь уже заблокирован.'
+    
+
+@dataclass(eq=False)
+class ActiveBlockNotFoundException(DomainErrorException):
+    status_code: int = status.HTTP_400_BAD_REQUEST
+    
+    @property
+    def message(self) -> str:
+        return 'Активная блокировка не найдена.'
+    
