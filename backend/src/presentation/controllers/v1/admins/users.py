@@ -1,28 +1,37 @@
+from dishka.integrations.fastapi import FromDishka as Depends
+from dishka.integrations.fastapi import inject
 from fastapi import APIRouter, status
-from dishka.integrations.fastapi import inject, FromDishka as Depends
-from src.application.use_cases.admin.users.unblock_user import UnblockUserUseCase
-from src.domain.user.blocked_user import BlockedUserEntity
 from src.application.use_cases.admin.users.block_user import BlockUserUseCase
-from src.application.use_cases.admin.users.update_role import UpdateUserRoleUseCase
 from src.application.use_cases.admin.users.delete_user import DeleteUserUseCase
+from src.application.use_cases.admin.users.get_users import (
+    GetAllUsersUseCase, GetUserByTelegramId)
+from src.application.use_cases.admin.users.unblock_user import \
+    UnblockUserUseCase
+from src.application.use_cases.admin.users.update_role import \
+    UpdateUserRoleUseCase
+from src.domain.user.blocked_user import BlockedUserEntity
 from src.domain.user.entity import UserEntity
-from src.presentation.schemas.user import UpdateUserRole, UserAdminViewSchema, UserBlockSchema, BlockedUserOutSchema
-from src.application.use_cases.admin.users.get_users import GetAllUsersUseCase, GetUserByTelegramId
 from src.presentation.decorators.check_role import check_role
 from src.presentation.schemas.error import ErrorSchema
 from src.presentation.schemas.success import SuccessResponse
+from src.presentation.schemas.user import (BlockedUserOutSchema,
+                                           UpdateUserRole, UserAdminViewSchema,
+                                           UserBlockSchema)
 
 
 router: APIRouter = APIRouter()
 
 
 @router.get(
-    '/users',
+    '',
     description='Эндпоинт для получения всех пользователей',
     status_code=status.HTTP_200_OK,
     responses={
         status.HTTP_200_OK: {'model': list[UserAdminViewSchema]},
-        status.HTTP_403_FORBIDDEN: {'model': ErrorSchema, 'description': 'Permission denied.'},
+        status.HTTP_403_FORBIDDEN: {
+            'description': 'User does not have permission to perform this action',
+            'model': ErrorSchema,
+        },
     },
 )
 @inject
@@ -37,12 +46,16 @@ async def get_all_users(
 
 
 @router.get(
-    '/users/{telegram_id}',
+    '/{telegram_id}',
     description='Эндпоинт для получения конкретного пользователя',
     status_code=status.HTTP_200_OK,
     responses={
         status.HTTP_200_OK: {'model': UserAdminViewSchema},
         status.HTTP_404_NOT_FOUND: {'model': ErrorSchema, 'description': 'User not found'},
+        status.HTTP_403_FORBIDDEN: {
+            'description': 'User does not have permission to perform this action',
+            'model': ErrorSchema,
+        },
     },
 )
 @inject
@@ -59,7 +72,7 @@ async def get_user_by_id(
 
 
 @router.delete(
-    '/users/{telegram_id}',
+    '/{telegram_id}',
     description='Эндпоинт для удаления пользователя',
     status_code=status.HTTP_204_NO_CONTENT,
     responses={
@@ -70,7 +83,8 @@ async def get_user_by_id(
             'model': ErrorSchema, 'description': 'User not found.',
         },
         status.HTTP_403_FORBIDDEN: {
-            'model': ErrorSchema, 'description': 'Permission denied.',
+            'description': 'User does not have permission to perform this action',
+            'model': ErrorSchema,
         },
     },
 )
@@ -87,7 +101,7 @@ async def delete_user(
 
 
 @router.patch(
-    '/users/{telegram_id}/role',
+    '/{telegram_id}/role',
     description='Эндпоинт для изменения роли у пользователя',
     status_code=status.HTTP_200_OK,
     responses={
@@ -96,7 +110,8 @@ async def delete_user(
             'model': UserAdminViewSchema
         },
         status.HTTP_403_FORBIDDEN: {
-            'model': ErrorSchema, 'description': 'Permission denied (e.g., trying to change your own role or a developer’s role)',
+            'description': 'User does not have permission to perform this action',
+            'model': ErrorSchema,
         },
         status.HTTP_404_NOT_FOUND: {
             'model': ErrorSchema, 'description': 'User not found',
@@ -117,7 +132,7 @@ async def update_user_role(
 
 
 @router.post(
-    '/users/{telegram_id}/block',
+    '/{telegram_id}/block',
     description='Эндпоинт для блокировки пользователя',
     status_code=status.HTTP_200_OK,
     responses={
@@ -134,8 +149,8 @@ async def update_user_role(
             'description': 'Invalid block data or user is already blocked',
         },
         status.HTTP_403_FORBIDDEN: {
+            'description': 'User does not have permission to perform this action',
             'model': ErrorSchema,
-            'description': 'Insufficient permissions to perform this action',
         },
     },
 )
@@ -153,9 +168,23 @@ async def block_user(
 
 
 @router.post(
-    '/users/{telegram_id}/unblock',
+    '/{telegram_id}/unblock',
     description='Эндпоинт для разблокировки пользователя',
     status_code=status.HTTP_200_OK,
+    responses={
+        status.HTTP_200_OK: {
+            'description': 'User successfully unblocked',
+            'model': SuccessResponse,
+        },
+        status.HTTP_403_FORBIDDEN: {
+            'description': 'User does not have permission to perform this action',
+            'model': ErrorSchema,
+        },
+        status.HTTP_404_NOT_FOUND: {
+            'description': 'User with the given Telegram ID not found',
+            'model': ErrorSchema,
+        },
+    },
 )
 @inject
 @check_role(allowed_roles=['dev', 'admin'])
