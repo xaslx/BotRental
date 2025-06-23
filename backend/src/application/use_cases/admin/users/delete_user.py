@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 class DeleteUserUseCase:
     _user_repository: BaseUserRepository
 
-    async def execute(self, telegram_id: int, admin: UserEntity) -> UserEntity:
+    async def execute(self, telegram_id: int, admin: UserEntity) -> UserEntity | None:
 
         user: UserEntity | None = await self._user_repository.get_user_by_telegram_id(telegram_id=telegram_id)
         
@@ -35,5 +35,4 @@ class DeleteUserUseCase:
             user.delete()
             deleted_user: UserEntity = await self._user_repository.update(entity=user)
             logger.info(f'Администратор: {admin.telegram_id.to_raw()} удалил пользователя: {user.telegram_id.to_raw()}')
-
-        return deleted_user
+            return deleted_user

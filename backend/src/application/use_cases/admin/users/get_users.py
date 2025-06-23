@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from src.domain.user.exception import UserNotFoundException
 from src.domain.user.entity import UserEntity
 from src.infrastructure.repositories.user.base import BaseUserRepository
 import logging
@@ -18,8 +19,7 @@ class GetAllUsersUseCase:
         
         if not users:
             return None
-        
-        
+
         logger.info(f'Администратор {admin.telegram_id.value} получил список пользователей')
 
         return users
@@ -35,7 +35,7 @@ class GetUserByTelegramId:
         user: UserEntity | None = await self._user_repository.get_user_by_telegram_id(telegram_id=telegram_id)
 
         if not user:
-            return None
+            raise UserNotFoundException()
         
         logger.info(f'Администратор {admin.telegram_id.to_raw()} получил пользователя: {user.telegram_id.to_raw()}')
 
