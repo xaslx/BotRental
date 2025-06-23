@@ -18,8 +18,8 @@ class SendCodeSchema(BaseModel):
 class UserOutSchema(BaseModel):
     id: int
     created_at: datetime
-    telegram_id: TelegramId
-    balance: Balance
+    telegram_id: int
+    balance: int
     blocks: list
 
     model_config = ConfigDict(from_attributes=True)
