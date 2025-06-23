@@ -42,7 +42,7 @@ async def get_all_users(
 ) -> list[UserAdminViewSchema] | None:
     
     users: list[UserEntity] = await use_case.execute(admin=user)
-    return [UserAdminViewSchema.model_validate(user) for user in users]
+    return [UserAdminViewSchema.model_validate(user.to_dict()) for user in users]
 
 
 @router.get(
@@ -67,7 +67,7 @@ async def get_user_by_id(
 ) -> UserAdminViewSchema | None: 
 
     user: UserEntity | None = await use_case.execute(telegram_id=telegram_id, admin=user)
-    return UserAdminViewSchema.model_validate(user)
+    return UserAdminViewSchema.model_validate(user.to_dict())
 
 
 
@@ -128,7 +128,7 @@ async def update_user_role(
 ) -> UserAdminViewSchema:
     
     user: UserEntity = await use_case.execute(telegram_id=telegram_id, admin=user, new_role=new_role)
-    return UserAdminViewSchema.model_validate(user)
+    return UserAdminViewSchema.model_validate(user.to_dict())
 
 
 @router.post(
