@@ -28,6 +28,10 @@ class BaseUserRepository(ABC, Generic[T]):
 
 
     @abstractmethod
+    async def get_user_with_rentals(self, user_id: int) -> UserEntity | None:
+        ...
+
+    @abstractmethod
     async def update(self, entity: UserEntity) -> UserEntity:
         ...
 

@@ -1,9 +1,11 @@
+from src.infrastructure.database.models.bots import BotRental
 from src.infrastructure.repositories.user.base import BaseUserRepository, T
 from dataclasses import dataclass
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.domain.user.entity import UserEntity
 from src.infrastructure.database.models.user import User
 from sqlalchemy import select
+from sqlalchemy.orm import selectinload
 import logging
 
 
@@ -22,7 +24,6 @@ class SQLAlchemyUserRepository(BaseUserRepository):
             logger.info(f'Пользователь добавлен: {entity}')
             return model.to_entity()
         except Exception as e:
-            await self._session.rollback()
             logger.exception(f'Ошибка при добавлении пользователя: {entity} в БД')
             raise
 
@@ -35,6 +36,16 @@ class SQLAlchemyUserRepository(BaseUserRepository):
         except Exception as e:
             logger.exception('Ошибка при получении всех пользователей')
             raise
+
+    async def get_user_with_rentals(self, user_id: int) -> UserEntity | None:
+        result = await self._session.execute(
+            select(User)
+            .where(User.id == user_id)
+            .options(selectinload(User.rentals).selectinload(BotRental.bot))
+        )
+        user = result.scalar_one_or_none()
+        return user.to_entity() if user else None
+    
 
     async def get_user_by_telegram_id(self, telegram_id: int) -> UserEntity | None:
         try:
@@ -65,7 +76,6 @@ class SQLAlchemyUserRepository(BaseUserRepository):
                 return None
 
             user_model.balance = entity.balance.value
-            user_model.is_active = entity.is_active
             user_model.is_deleted = entity.is_deleted
             user_model.role = entity.role.value
 
@@ -75,7 +85,6 @@ class SQLAlchemyUserRepository(BaseUserRepository):
             logger.info(f'Пользователь обновлён: {entity.telegram_id}')
             return user_model.to_entity()
         except Exception as e:
-            await self._session.rollback()
             logger.exception(f'Ошибка при обновлении пользователя: {entity}')
             raise
 
@@ -93,6 +102,5 @@ class SQLAlchemyUserRepository(BaseUserRepository):
             await self._session.commit()
             logger.info(f'Пользователь сохранён: {entity}')
         except Exception as e:
-            await self._session.rollback()
             logger.exception(f'Ошибка при сохранении пользователя: {entity}')
             raise

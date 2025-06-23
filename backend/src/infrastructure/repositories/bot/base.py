@@ -19,10 +19,19 @@ class BaseBotRepository(ABC, Generic[T]):
     async def get_all_bots(self) -> list[BotEntity] | None:
         ...
 
+
     @abstractmethod
-    async def get_bot_by_id(self, bot_id: int) -> BotEntity | None:
+    async def update(self, bot_entity: BotEntity) -> BotEntity | None:
         ...
 
     @abstractmethod
-    async def update(self, bot: BotEntity) -> BotEntity | None:
+    async def get_bot_with_rentals(self, bot_id: int) -> BotEntity | None:
+        ...
+
+    @abstractmethod
+    async def get_all_bots_with_rentals(self) -> list[BotEntity] | None:
+        ...
+
+    @abstractmethod
+    async def get_bot_by_id(self, bot_id: int) -> BotEntity | None:
         ...
