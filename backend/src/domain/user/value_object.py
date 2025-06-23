@@ -5,7 +5,7 @@ from src.domain.user.exception import InvalidTelegramIDTypeException, InvalidTel
 
 
 @dataclass(frozen=True)
-class TelegramId(BaseValueObject):
+class TelegramId(BaseValueObject[int]):
 
     def validate(self):
 
@@ -13,11 +13,6 @@ class TelegramId(BaseValueObject):
             raise InvalidTelegramIDTypeException()
         if self.value <= 0:
             raise InvalidTelegramIDValueException()
-
-    def __eq__(self, value: 'TelegramId') -> bool:
-        if not isinstance(value, TelegramId):
-            return False
-        return self.value == value.value
 
     def to_raw(self):
         return self.value

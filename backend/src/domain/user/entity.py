@@ -32,7 +32,7 @@ class UserEntity(BaseEntity):
 
     @property
     def is_blocked(self) -> bool:
-        now = datetime.now(tz=self.created_at.tzinfo)  # используем ту же зону, что и в объекте
+        now = datetime.now(tz=self.created_at.tzinfo)
         return any(
             block.blocked_until is None or block.blocked_until > now
             for block in self.blocks
