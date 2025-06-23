@@ -22,4 +22,4 @@ async def get_my_profile(
     user: Depends[UserEntity],
 ) -> UserOutSchema | None:
     
-    return UserOutSchema.model_validate(user)
+    return UserOutSchema.model_validate(user.to_dict())
