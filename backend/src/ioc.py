@@ -2,6 +2,14 @@ from dishka import Provider, Scope, provide, from_context
 from fastapi import Request
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from typing import AsyncIterable
+from src.application.use_cases.admin.bot.change_status_bot import DeactivateBotUseCase, ActivateBotUseCase
+from src.application.use_cases.admin.bot.update_bot import UpdateBotUseCase
+from src.application.use_cases.admin.bot.delete_bot import DeleteBotUseCase
+from src.application.use_cases.admin.bot.get_all_bots_with_rentals import GetAllBotsWithRentalsUseCase
+from src.application.use_cases.user.bot.get_all_bots import GetAllBotsUseCase
+from src.application.use_cases.admin.bot.create_bot import CreateNewBotUseCase
+from src.infrastructure.repositories.bot.base import BaseBotRepository
+from src.infrastructure.repositories.bot.sqlalchemy import SQLAlchemyBotRepository
 from src.application.use_cases.admin.users.unblock_user import UnblockUserUseCase
 from src.application.use_cases.admin.users.block_user import BlockUserUseCase
 from src.application.use_cases.admin.users.update_role import UpdateUserRoleUseCase
@@ -48,6 +56,11 @@ class AppProvider(Provider):
     def get_blocked_user_repository(self, session: AsyncSession) -> BaseBlockedUserRepository:
 
         return BlockedUserRepository(_session=session)
+    
+    @provide(scope=Scope.REQUEST)
+    def get_bots_repository(self, session: AsyncSession) -> BaseBotRepository:
+
+        return SQLAlchemyBotRepository(_session=session)
 
 
     #USE CASES
@@ -161,7 +174,63 @@ class AppProvider(Provider):
             _user_repository=user_repository,
             _blocked_user_repository=blocked_user_repository,
         )
+    
+    @provide(scope=Scope.REQUEST)
+    def get_create_bot_use_case(
+        self,
+        bot_repository: BaseBotRepository,
+    ) -> CreateNewBotUseCase:
         
+        return CreateNewBotUseCase(_bot_repository=bot_repository)
+        
+    @provide(scope=Scope.REQUEST)
+    def get_all_bots_use_case(
+        self,
+        bot_repository: BaseBotRepository,
+    ) -> GetAllBotsUseCase:
+        
+        return GetAllBotsUseCase(_bot_repository=bot_repository)
+    
+
+    @provide(scope=Scope.REQUEST)
+    def get_all_bots_with_rentals(
+        self,
+        bot_repository: BaseBotRepository,
+    ) -> GetAllBotsWithRentalsUseCase:
+        
+        return GetAllBotsWithRentalsUseCase(_bot_repository=bot_repository)
+    
+    @provide(scope=Scope.REQUEST)
+    def get_delete_bot_use_case(
+        self,
+        bot_repository: BaseBotRepository,
+    ) -> DeleteBotUseCase:
+        
+        return DeleteBotUseCase(_bot_repository=bot_repository)
+    
+    @provide(scope=Scope.REQUEST)
+    def get_update_bot_use_case(
+        self,
+        bot_repository: BaseBotRepository,
+    ) -> UpdateBotUseCase:
+        
+        return UpdateBotUseCase(_bot_repository=bot_repository)
+    
+    @provide(scope=Scope.REQUEST)
+    def get_activate_bot_use_case(
+        self,
+        bot_repository: BaseBotRepository,
+    ) -> ActivateBotUseCase:
+        
+        return ActivateBotUseCase(_bot_repository=bot_repository)
+    
+    @provide(scope=Scope.REQUEST)
+    def get_deactivate_bot_use_case(
+        self,
+        bot_repository: BaseBotRepository,
+    ) -> DeactivateBotUseCase:
+        
+        return DeactivateBotUseCase(_bot_repository=bot_repository)
 
     #SERVICES
     @provide(scope=Scope.REQUEST)
