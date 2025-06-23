@@ -4,6 +4,8 @@ from src.infrastructure.database.models.base import Base
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import ForeignKey, DateTime
 from typing import TYPE_CHECKING
+from src.domain.bot.value_object import BotDescription, BotName, BotPrice
+
 
 
 if TYPE_CHECKING:
@@ -21,17 +23,20 @@ class Bot(Base):
 
     rentals: Mapped[list['BotRental']] = relationship(back_populates='bot')
 
-    def to_entity(self) -> BotEntity:
+    def to_entity(self, include_rentals: bool = True) -> BotEntity:
         return BotEntity(
             id=self.id,
-            created_at=self.created_at.astimezone(MOSCOW_TZ),
-            updated_at=self.updated_at.astimezone(MOSCOW_TZ),
-            name=self.name,
-            description=self.description,
+            created_at = self.created_at.astimezone(MOSCOW_TZ),
+            updated_at = self.updated_at.astimezone(MOSCOW_TZ),
+            name=BotName(value=self.name),
+            description=BotDescription(value=self.description),
             is_available=self.is_available,
             is_deleted=self.is_deleted,
-            price=self.price,
-            rentals=[rental.to_entity() for rental in self.rentals] if self.rentals else [],
+            price=BotPrice(value=self.price),
+            rentals=[
+                rental.to_entity(include_user=include_rentals)
+                for rental in self.rentals
+            ] if include_rentals and self.rentals else [],
     )
     
     @classmethod
@@ -40,11 +45,11 @@ class Bot(Base):
             id=entity.id,
             created_at=entity.created_at,
             updated_at=entity.updated_at,
-            name=entity.name,
-            description=entity.description,
+            name=entity.name.to_raw(),
+            description=entity.description.to_raw(),
             is_available=entity.is_available,
             is_deleted=entity.is_deleted,
-            price=entity.price,
+            price=entity.price.to_raw(),
         )
 
         bot.rentals = [BotRental.from_entity(r) for r in entity.rentals]
@@ -65,17 +70,17 @@ class BotRental(Base):
     user: Mapped['User'] = relationship(back_populates='rentals')
     bot: Mapped['Bot'] = relationship(back_populates='rentals')
 
-    def to_entity(self) -> BotRentalEntity:
+    def to_entity(self, include_user: bool = True) -> BotRentalEntity:
         return BotRentalEntity(
             id=self.id,
-            created_at=self.created_at.astimezone(MOSCOW_TZ),
-            updated_at=self.updated_at.astimezone(MOSCOW_TZ),
+            created_at = self.created_at.astimezone(MOSCOW_TZ),
+            updated_at = self.updated_at.astimezone(MOSCOW_TZ),
             user_id=self.user_id,
             bot_id=self.bot_id,
             token=self.token,
             rented_until=self.rented_until,
             is_active=self.is_active,
-            user=self.user.to_entity() if self.user else None,
+            user=self.user.to_entity() if include_user and self.user else None,
             bot=None,
         )
 
