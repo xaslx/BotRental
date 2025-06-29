@@ -108,3 +108,37 @@ class ActiveBlockNotFoundException(DomainErrorException):
     def message(self) -> str:
         return 'Активная блокировка не найдена.'
     
+
+@dataclass(eq=False)
+class ReferrerAlreadyAssignedException(DomainErrorException):
+    status_code: int = status.HTTP_400_BAD_REQUEST
+
+    @property
+    def message(self) -> str:
+        return 'Реферер уже назначен для этого пользователя.'
+
+@dataclass(eq=False)
+class ReferrerNotFoundException(DomainErrorException):
+    status_code: int = status.HTTP_404_NOT_FOUND
+
+    @property
+    def message(self) -> str:
+        return 'Пригласивший пользователь не найден.'
+
+
+@dataclass(eq=False)
+class SelfReferralException(DomainErrorException):
+    status_code: int = status.HTTP_400_BAD_REQUEST
+
+    @property
+    def message(self) -> str:
+        return 'Пользователь не может пригласить сам себя.'
+
+
+@dataclass(eq=False)
+class DuplicateReferralException(DomainErrorException):
+    status_code: int = status.HTTP_400_BAD_REQUEST
+
+    @property
+    def message(self) -> str:
+        return 'Этот пользователь уже был добавлен как реферал.'

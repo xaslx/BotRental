@@ -1,6 +1,7 @@
 from enum import StrEnum
 from dataclasses import dataclass, field
 from datetime import datetime
+from src.domain.referral.entity import ReferralEntity
 from src.domain.common.entity import BaseEntity
 from src.domain.user.value_object import TelegramId
 from src.domain.balance.value_object import Balance
@@ -9,7 +10,11 @@ from src.domain.user.exception import (
     AlreadyBlockedException,
     InvalidBlockDurationException,
     ActiveBlockNotFoundException,
+    ReferrerAlreadyAssignedException,
+    SelfReferralException,
 )
+
+from src.domain.bot.entity import BotRentalEntity
 
 
 class Role(StrEnum):
@@ -17,14 +22,21 @@ class Role(StrEnum):
     ADMIN = 'admin'
     DEV = 'dev'
 
+BONUS_AMOUNT: int = 50
 
-@dataclass
+
+@dataclass(kw_only=True)
 class UserEntity(BaseEntity):
     telegram_id: TelegramId
     balance: Balance = field(default=Balance(value=0))
     is_deleted: bool = field(default=False)
     role: Role = field(default=Role.USER)
     blocks: list[BlockedUserEntity] = field(default_factory=list)
+    referrer_id: int | None = field(default=None)
+    total_bonus_received: int = field(default=0)
+    rentals: list[BotRentalEntity] = field(default_factory=list)
+    referrals: list[ReferralEntity] = field(default_factory=list)
+
 
     @classmethod
     def create_user(cls, telegram_id: int) -> 'UserEntity':
@@ -38,13 +50,7 @@ class UserEntity(BaseEntity):
             for block in self.blocks
         )
 
-    def block(
-        self,
-        days: int,
-        reason: str,
-        admin_id: int,
-    ) -> BlockedUserEntity:
-        
+    def block(self, days: int, reason: str, admin_id: int) -> BlockedUserEntity:
         if self.is_blocked:
             raise AlreadyBlockedException()
 
@@ -82,6 +88,17 @@ class UserEntity(BaseEntity):
     def change_role(self, new_role: Role) -> None:
         self.role = new_role
 
+    def assign_referrer(self, referrer_id: int) -> None:
+        if self.referrer_id:
+            raise ReferrerAlreadyAssignedException()
+        if referrer_id == self.id:
+            raise SelfReferralException()
+        self.referrer_id = referrer_id
+
+
+    def add_referral_bonus(self) -> None:
+        self.deposit(BONUS_AMOUNT)
+
     def to_dict(self) -> dict:
         return {
             'id': self.id,
@@ -92,7 +109,12 @@ class UserEntity(BaseEntity):
             'is_deleted': self.is_deleted,
             'role': self.role.value,
             'blocks': [block.to_dict() for block in self.blocks],
+            'rentals': [rental.to_dict() for rental in self.rentals],
+            'referrals': [ref.to_dict() for ref in self.referrals],
+            'referrer_id': self.referrer_id,
+            'total_bonus_received': self.total_bonus_received,
         }
+
 
     @classmethod
     def from_dict(cls, data: dict) -> 'UserEntity':
@@ -105,4 +127,9 @@ class UserEntity(BaseEntity):
             is_deleted=data['is_deleted'],
             role=Role(data['role']),
             blocks=[BlockedUserEntity.from_dict(b) for b in data.get('blocks', [])],
+            rentals=[BotRentalEntity.from_dict(r) for r in data.get('rentals', [])],
+            referrals=[ReferralEntity.from_dict(r) for r in data.get('referrals', [])],
+            referrer_id=data.get('referrer_id'),
+            total_bonus_received=data.get('total_bonus_received', 0),
         )
+
