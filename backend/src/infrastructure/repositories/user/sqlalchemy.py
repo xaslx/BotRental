@@ -20,12 +20,29 @@ class SQLAlchemyUserRepository(BaseUserRepository):
         try:
             model: User = User.from_entity(entity=entity)
             self._session.add(model)
+            await self._session.flush()
+            await self._session.refresh(model, attribute_names=['referrals', 'blocks'])
             await self._session.commit()
             logger.info(f'Пользователь добавлен: {entity}')
             return model.to_entity()
         except Exception as e:
             logger.exception(f'Ошибка при добавлении пользователя: {entity} в БД')
             raise
+    
+    async def get_full_user_info_for_admin(self, telegram_id: int) -> UserEntity | None:
+        result = await self._session.execute(
+            select(User)
+            .where(User.telegram_id == telegram_id)
+            .options(
+                selectinload(User.blocks),
+                selectinload(User.rentals).selectinload(BotRental.bot),
+                selectinload(User.referrals),
+            )
+        )
+        user: User | None = result.scalar_one_or_none()
+
+        return user.to_entity() if user else None
+
 
     async def get_all_users(self) -> list[UserEntity] | None:
         try:
@@ -39,9 +56,12 @@ class SQLAlchemyUserRepository(BaseUserRepository):
 
     async def get_user_with_rentals(self, user_id: int) -> UserEntity | None:
         result = await self._session.execute(
-            select(User)
+        select(User)
             .where(User.id == user_id)
-            .options(selectinload(User.rentals).selectinload(BotRental.bot))
+            .options(
+                selectinload(User.rentals).selectinload(BotRental.bot),
+                selectinload(User.referrals),
+            )
         )
         user = result.scalar_one_or_none()
         return user.to_entity() if user else None
@@ -78,6 +98,8 @@ class SQLAlchemyUserRepository(BaseUserRepository):
             user_model.balance = entity.balance.value
             user_model.is_deleted = entity.is_deleted
             user_model.role = entity.role.value
+            user_model.referrer_id = entity.referrer_id
+            user_model.total_bonus_received = entity.total_bonus_received
 
             await self._session.commit()
             await self._session.refresh(user_model)

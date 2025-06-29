@@ -36,6 +36,10 @@ class BaseUserRepository(ABC, Generic[T]):
         ...
 
     @abstractmethod
+    async def get_full_user_info_for_admin(self, telegram_id: int) -> UserEntity | None:
+        ...
+
+    @abstractmethod
     async def delete(self, entity: UserEntity) -> None:
         ...
 
