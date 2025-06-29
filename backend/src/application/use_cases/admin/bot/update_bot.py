@@ -27,7 +27,6 @@ class UpdateBotUseCase:
             name=update_schema.name,
             description=update_schema.description,
             price=update_schema.price,
-            is_available=update_schema.is_available
         )
 
         updated_bot: BotEntity = await self._bot_repository.update(bot_entity=bot)
