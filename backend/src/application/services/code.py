@@ -28,11 +28,18 @@ async def send_and_cache(telegram_id: int, cache_service: BaseCacheService) -> b
 class SendCodeService(ABC):
     _cache_service: BaseCacheService
 
-    async def execute(self, telegram_id: int) -> bool:
+    async def execute(self, telegram_id: int, ref_id: int | None = None) -> bool:
         code: str = await self._cache_service.get(f'{telegram_id}:code')
 
         if code:
             raise TooManyCodeRequestsException()
+        
+        if ref_id:
+            await self._cache_service.set_with_ttl(
+                key=f'{telegram_id}:referral',
+                value=str(ref_id),
+                ttl_seconds=300,
+            )
         
         return await send_and_cache(telegram_id=telegram_id, cache_service=self._cache_service)
 
