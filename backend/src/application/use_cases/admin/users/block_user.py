@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from src.domain.user.blocked_user import BlockedUserEntity
-from src.domain.user.exception import UserNotFoundException
+from src.domain.user.exception import SelfBlockException, UserNotFoundException
 from src.domain.user.entity import UserEntity
 from src.presentation.schemas.user import UserBlockSchema
 from src.infrastructure.repositories.user.base import BaseBlockedUserRepository, BaseUserRepository
@@ -22,6 +22,10 @@ class BlockUserUseCase:
 
         if not user:
             raise UserNotFoundException()
+        
+        if user.id == admin.id:
+            logger.warning(f'Администратор: {admin.telegram_id.to_raw()} попытался заблокировать сам себя.')
+            raise SelfBlockException()
         
         block: BlockedUserEntity = user.block(
             days=block_schema.days,

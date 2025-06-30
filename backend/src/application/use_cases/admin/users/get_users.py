@@ -32,7 +32,7 @@ class GetUserByTelegramId:
 
     async def execute(self, telegram_id: int, admin: UserEntity) -> UserEntity | None:
 
-        user: UserEntity | None = await self._user_repository.get_full_user_info_for_admin(user_id=telegram_id)
+        user: UserEntity | None = await self._user_repository.get_full_user_info_for_admin(telegram_id=telegram_id)
 
         if not user:
             raise UserNotFoundException()
