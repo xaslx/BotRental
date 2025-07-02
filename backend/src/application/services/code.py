@@ -1,9 +1,9 @@
 from dataclasses import dataclass
 from src.infrastructure.cache.base import BaseCacheService
 import random
-from src.infrastructure.broker_messages.rabbitmq.publisher import publish
 from abc import ABC
 import logging
+from src.infrastructure.taskiq.tasks import send_notification
 from src.domain.user.exception import InvalidCodeException, TooManyCodeRequestsException
 
 
@@ -15,7 +15,7 @@ async def send_and_cache(telegram_id: int, cache_service: BaseCacheService) -> b
     code: str = str(random.randint(100000, 999999))
     logger.info(f'Сгенерирован код: {code} для пользователя: {telegram_id}')
 
-    await publish(chat_id=telegram_id, text=f'Ваш код: {code}')
+    await send_notification.kiq(user_id=telegram_id, text=f'Ваш код: {code}')
     logger.info(f'Код: {code} отправлен пользователю в телеграм: {telegram_id}')
 
     await cache_service.set_with_ttl(key=f'{telegram_id}:code', value=code, ttl_seconds=300)

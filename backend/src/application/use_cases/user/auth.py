@@ -1,20 +1,21 @@
-from dataclasses import dataclass
 import logging
-from sqlalchemy.ext.asyncio import AsyncSession
-from fastapi import HTTPException, status
-from src.domain.user.exception import ReferrerNotFoundException, UserNotFoundException
-from src.domain.referral.entity import ReferralEntity
-from src.infrastructure.cache.base import BaseCacheService
-from src.infrastructure.repositories.referral.base import BaseReferralRepository
-from src.infrastructure.repositories.user.base import BaseUserRepository
-from src.domain.user.entity import UserEntity
-from src.infrastructure.broker_messages.rabbitmq.publisher import publish
-from src.presentation.schemas.user import CheckCodeSchema
-from src.application.services.code import SendCodeService, CheckCodeService
+from dataclasses import dataclass
 from datetime import datetime
-from src.const import MOSCOW_TZ
+
+from fastapi import HTTPException, status
+from src.application.services.code import CheckCodeService, SendCodeService
 from src.application.services.jwt import JWTService
+from src.const import MOSCOW_TZ
+from src.domain.referral.entity import ReferralEntity
+from src.domain.user.entity import UserEntity
+from src.domain.user.exception import ReferrerNotFoundException
+from src.infrastructure.cache.base import BaseCacheService
+from src.infrastructure.repositories.referral.base import \
+    BaseReferralRepository
+from src.infrastructure.repositories.user.base import BaseUserRepository
+from src.infrastructure.taskiq.tasks import send_notification
 from src.presentation.schemas.jwt_token import JWTToken
+from src.presentation.schemas.user import CheckCodeSchema
 
 
 logger = logging.getLogger(__name__)
@@ -65,8 +66,8 @@ class RegisterUserUseCase:
             await self._cache_service.delete(key=f'{new_user.telegram_id.to_raw()}:referral')
 
         logger.info(f'Новый пользователь {telegram_id} зарегистрирован')
-        await publish(
-            chat_id=telegram_id,
+        await send_notification.kiq(
+            user_id=telegram_id,
             text=f'Вы успешно зарегистрировались на сервисе BotRental\n{datetime.strftime(new_user.created_at, "%d.%m.%Y %H:%M")}'
         )
         logger.info(f'Пользователю {telegram_id} направлено уведомление в Telegram')
@@ -105,10 +106,11 @@ class VerifyCodeUseCase:
             logger.info(f'Пользователь {user.telegram_id.to_raw()} совершил вход.')
             current_datetime = datetime.now(tz=MOSCOW_TZ)
             
-            await publish(
-                chat_id=user.telegram_id.to_raw(),
-                text=f'Вы успешно вошли на сервис BotRental\n{datetime.strftime(current_datetime, '%d.%m.%Y %H:%M')}'
+            await send_notification.kiq(
+                user_id=user.telegram_id.to_raw(),
+                text=f'Вы успешно вошли на сервис BotRental\n{datetime.strftime(current_datetime, '%d.%m.%Y %H:%M')}',
             )
+            
             logger.info(f'Пользователю {user.telegram_id.to_raw()} направлено уведомление в Telegram')
             return user, access_token, refresh_token
         
