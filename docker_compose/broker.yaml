@@ -18,19 +18,6 @@ services:
     networks:
       - backend
 
-  consumer:
-    build: 
-      context: ..
-      dockerfile: backend/Dockerfile
-    container_name: consumer
-    env_file:
-      - ../.env
-    depends_on:
-      - rabbitmq
-    command: sh -c "sleep 15 && python -m backend.src.infrastructure.broker_messages.rabbitmq.consumer"
-    networks:
-      - backend
-
 
 networks:
   backend:

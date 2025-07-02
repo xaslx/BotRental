@@ -9,12 +9,12 @@ APP_CONTAINER = bot-rental
 BROKER_FILE = docker_compose/broker.yaml
 TELEGRAM_BOT_FILE = docker_compose/tg_bot.yaml
 LOGS_MONITORING = docker_compose/logs_monitoring.yaml
-
+TASKIQ_FILE = docker_compose/taskiq_worker.yaml
 
 
 .PHONY: app
 app:
-	${DC} -f ${APP_FILE} -f ${STORAGES_FILE} -f ${BROKER_FILE} -f ${LOGS_MONITORING} -f ${TELEGRAM_BOT_FILE} ${ENV} up --build -d
+	${DC} -f ${APP_FILE} -f ${STORAGES_FILE} -f ${BROKER_FILE} -f ${TASKIQ_FILE} -f ${LOGS_MONITORING} -f ${TELEGRAM_BOT_FILE} ${ENV} up --build -d
 
 
 .PHONY: app-logs
@@ -24,7 +24,7 @@ app-logs:
 
 .PHONY: app-down
 app-down:
-	${DC} -f ${APP_FILE} -f ${STORAGES_FILE} -f ${BROKER_FILE} -f ${LOGS_MONITORING} -f ${TELEGRAM_BOT_FILE} down
+	${DC} -f ${APP_FILE} -f ${STORAGES_FILE} -f ${BROKER_FILE} -f ${TASKIQ_FILE} -f ${LOGS_MONITORING} -f ${TELEGRAM_BOT_FILE} down
 
 
 .PHONY: alembic-revision
@@ -35,6 +35,10 @@ alembic-revision:
 .PHONY: alembic-upgrade
 alembic-upgrade:
 	${EXEC} ${APP_CONTAINER} alembic upgrade head
+
+.PHONY: alembic-generate
+alembic-generate:
+	${EXEC} ${APP_CONTAINER} alembic revision --autogenerate -m "initial"
 
 
 .PHONY: run-test

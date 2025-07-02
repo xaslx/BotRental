@@ -1,0 +1,17 @@
+services:
+  taskiq-worker:
+    build:
+      context: ..
+      dockerfile: backend/Dockerfile
+    container_name: taskiq-worker
+    command: >
+      sh -c "sleep 10 &&
+             taskiq worker --ack-type when_executed -fsd src.infrastructure.taskiq.broker:broker"
+    env_file:
+      - ../.env
+    depends_on:
+      - rabbitmq
+    volumes:
+      - ../backend:/app
+    networks:
+      - backend
