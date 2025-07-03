@@ -11,5 +11,9 @@ class BaseReferralRepository(ABC):
         ...
 
     @abstractmethod
-    async def get_referrals_by_referrer(self, referrer_id: int) -> list[ReferralEntity]:
+    async def get_referrals_by_referrer(self, referrer_id: int) -> list[ReferralEntity] | None:
+        ...
+
+    @abstractmethod
+    async def get_all_referrals_by_referrer_id(self, referrer_id: int) -> list[ReferralEntity] | None:
         ...
