@@ -4,6 +4,10 @@ services:
       context: ..
       dockerfile: backend/Dockerfile
     container_name: bot
-    command: python -m backend.src.bot.run
+    volumes:
+      - ../backend:/app
+    command: python -m bot.run
     env_file:
       - ../.env
+    networks:
+      - backend
