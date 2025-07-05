@@ -3,10 +3,10 @@ from src.domain.user.exception import UserNotFoundException
 from src.domain.user.entity import UserEntity
 from src.infrastructure.repositories.user.base import BaseUserRepository
 import logging
+from src.infrastructure.taskiq.tasks import send_notification_for_admin
 
 
 logger = logging.getLogger(__name__)
-
 
 
 @dataclass
@@ -21,6 +21,7 @@ class GetAllUsersUseCase:
             return None
 
         logger.info(f'Администратор {admin.telegram_id.value} получил список пользователей')
+        await send_notification_for_admin.kiq(text=f'Администратор {admin.telegram_id.value} получил список пользователей')
 
         return users
 
@@ -38,5 +39,5 @@ class GetUserByTelegramId:
             raise UserNotFoundException()
         
         logger.info(f'Администратор {admin.telegram_id.to_raw()} получил пользователя: {user.telegram_id.to_raw()}')
-
+        await send_notification_for_admin.kiq(text=f'Администратор {admin.telegram_id.to_raw()} получил пользователя: {user.telegram_id.to_raw()}')
         return user

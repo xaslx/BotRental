@@ -5,6 +5,7 @@ from src.domain.bot.entity import BotEntity
 from src.domain.bot.exception import BotNotFoundException
 from src.domain.user.entity import UserEntity
 from src.infrastructure.repositories.bot.base import BaseBotRepository
+from src.infrastructure.taskiq.tasks import send_notification_for_admin
 
 
 logger = logging.getLogger(__name__)
@@ -33,6 +34,7 @@ class BaseBotStatusUseCase:
         logger.info(
             f'Администратор: {admin.telegram_id.to_raw()} {action_name} бота: {bot.id}'
         )
+        await send_notification_for_admin.kiq(text=f'Администратор: {admin.telegram_id.to_raw()} {action_name} бота: {bot.id}')
         return updated_bot
 
 

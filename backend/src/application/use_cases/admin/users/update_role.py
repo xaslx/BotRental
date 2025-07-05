@@ -4,6 +4,7 @@ from src.presentation.schemas.user import UpdateUserRole
 from src.domain.user.entity import UserEntity, Role
 from src.domain.user.exception import UserNotFoundException, PermissionDeniedException
 from src.infrastructure.repositories.user.base import BaseUserRepository
+from src.infrastructure.taskiq.tasks import send_notification_for_admin
 
 
 logger = logging.getLogger(__name__)
@@ -22,10 +23,12 @@ class UpdateUserRoleUseCase:
         
         if user.telegram_id.to_raw() == admin.telegram_id.to_raw():
             logger.warning(f'Администратор: {admin.telegram_id.to_raw()} попытался сменить роль сам себе')
+            await send_notification_for_admin.kiq(text=f'Администратор: {admin.telegram_id.to_raw()} попытался сменить роль сам себе')
             raise PermissionDeniedException()
         
         if user.role == Role.DEV:
             logger.warning(f'Администратор: {admin.telegram_id.to_raw()} попытался сменить роль у разработчика: {user.telegram_id.to_raw()}')
+            await send_notification_for_admin.kiq(text=f'Администратор: {admin.telegram_id.to_raw()} попытался сменить роль у разработчика: {user.telegram_id.to_raw()}')
             raise PermissionDeniedException()
         
         old_role: Role = user.role
@@ -37,7 +40,7 @@ class UpdateUserRoleUseCase:
             logger.info(
                 f'Администратор: {admin.telegram_id.to_raw()} сменил роль пользователю: {user.telegram_id.to_raw()} ({old_role} -> {new_role.role})'
             )
-
+            await send_notification_for_admin.kiq(text=f'Администратор: {admin.telegram_id.to_raw()} сменил роль пользователю: {user.telegram_id.to_raw()} ({old_role} -> {new_role.role})')
         return user
         
         

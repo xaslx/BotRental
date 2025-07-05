@@ -6,6 +6,7 @@ from src.domain.bot.exception import BotNotFoundException
 from src.domain.user.entity import UserEntity
 from src.infrastructure.repositories.bot.base import BaseBotRepository
 from src.presentation.schemas.bot import UpdateBotSchema
+from src.infrastructure.taskiq.tasks import send_notification_for_admin
 
 
 logger = logging.getLogger(__name__)
@@ -31,6 +32,7 @@ class UpdateBotUseCase:
 
         updated_bot: BotEntity = await self._bot_repository.update(bot_entity=bot)
         logger.info(f'Администратор: {admin.telegram_id.to_raw()} обновил бота: {bot.id} -> ({update_schema})')
+        await send_notification_for_admin.kiq(text=f'Администратор: {admin.telegram_id.to_raw()} обновил бота: {bot.id} -> ({update_schema})')
         return updated_bot
     
 

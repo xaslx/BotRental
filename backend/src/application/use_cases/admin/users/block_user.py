@@ -5,6 +5,7 @@ from src.domain.user.entity import UserEntity
 from src.presentation.schemas.user import UserBlockSchema
 from src.infrastructure.repositories.user.base import BaseBlockedUserRepository, BaseUserRepository
 import logging
+from src.infrastructure.taskiq.tasks import send_notification_for_admin
 
 
 logger = logging.getLogger(__name__)
@@ -25,6 +26,7 @@ class BlockUserUseCase:
         
         if user.id == admin.id:
             logger.warning(f'Администратор: {admin.telegram_id.to_raw()} попытался заблокировать сам себя.')
+            await send_notification_for_admin.kiq(text=f'Администратор: {admin.telegram_id.to_raw()} попытался заблокировать сам себя.')
             raise SelfBlockException()
         
         block: BlockedUserEntity = user.block(
@@ -35,4 +37,5 @@ class BlockUserUseCase:
 
         await self._blocked_user_repository.add(block)
         logger.info(f'Администратор: {admin.telegram_id.to_raw()} заблокировал пользователя: {user.telegram_id.to_raw()}')
+        await send_notification_for_admin.kiq(text=f'Администратор: {admin.telegram_id.to_raw()} заблокировал пользователя: {user.telegram_id.to_raw()}')
         return block
