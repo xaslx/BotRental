@@ -47,12 +47,12 @@ class RegisterUserUseCase:
 
         if ref_id:
             referrer_user: UserEntity | None = await self._user_repository.get_user_by_telegram_id(telegram_id=ref_id)
-
             if not referrer_user:
                 logger.warning(f'Реферер с telegram_id={ref_id} не найден')
                 await self._cache_service.delete(key=f'{new_user.telegram_id.to_raw()}:referral')
                 raise ReferrerNotFoundException()
             new_user.assign_referrer(referrer_id=referrer_user.id)
+            new_user.add_welcome_bonus()
 
         created_user: UserEntity = await self._user_repository.add(entity=new_user)
 

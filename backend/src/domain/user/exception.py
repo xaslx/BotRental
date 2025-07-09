@@ -108,6 +108,15 @@ class ActiveBlockNotFoundException(DomainErrorException):
     def message(self) -> str:
         return 'Активная блокировка не найдена.'
     
+    
+@dataclass(eq=False)
+class SelfBlockException(DomainErrorException):
+    status_code: int = status.HTTP_400_BAD_REQUEST
+
+    @property
+    def message(self) -> str:
+        return 'Администратор не может заблокировать самого себя.'
+    
 
 @dataclass(eq=False)
 class ReferrerAlreadyAssignedException(DomainErrorException):

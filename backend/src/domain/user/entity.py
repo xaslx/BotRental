@@ -23,6 +23,7 @@ class Role(StrEnum):
     DEV = 'dev'
 
 BONUS_AMOUNT: int = 50
+WELCOME_BONUS: int = 100
 
 
 @dataclass(kw_only=True)
@@ -37,6 +38,9 @@ class UserEntity(BaseEntity):
     rentals: list[BotRentalEntity] = field(default_factory=list)
     referrals: list[ReferralEntity] = field(default_factory=list)
 
+
+    def add_welcome_bonus(self) -> None:
+        self.deposit(amount=WELCOME_BONUS)
 
     @classmethod
     def create_user(cls, telegram_id: int) -> 'UserEntity':
@@ -57,7 +61,7 @@ class UserEntity(BaseEntity):
         if days is not None and days < 1:
             raise InvalidBlockDurationException()
 
-        block = BlockedUserEntity.create_block(
+        block: BlockedUserEntity = BlockedUserEntity.create_block(
             user_id=self.id,
             days=days,
             reason=reason,
@@ -77,10 +81,10 @@ class UserEntity(BaseEntity):
         raise ActiveBlockNotFoundException()
 
     def deposit(self, amount: int) -> None:
-        self.balance.add(amount)
+        self.balance = self.balance.add(amount)
 
     def withdraw(self, amount: int) -> None:
-        self.balance.subtract(amount)
+        self.balance = self.balance.subtract(amount)
 
     def delete(self) -> None:
         self.is_deleted = True
