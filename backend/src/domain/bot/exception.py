@@ -29,6 +29,14 @@ class BotNotFoundException(DomainErrorException):
     def message(self) -> str:
         return 'Бот не найден.'
     
+@dataclass(eq=False)
+class BotCannotBeRentedException(DomainErrorException):
+    status_code: int = status.HTTP_400_BAD_REQUEST
+
+    @property
+    def message(self) -> str:
+        return 'Бота сейчас нельзя арендовать.'
+    
 
 @dataclass(eq=False)
 class BotAlreadyDeletedException(DomainErrorException):
@@ -55,3 +63,21 @@ class BotAlreadyDeactivatedException(DomainErrorException):
     @property
     def message(self) -> str:
         return 'Бот уже деактивирован.'
+    
+
+@dataclass(eq=False)
+class RentalAlreadyStoppedException(DomainErrorException):
+    status_code: int = status.HTTP_400_BAD_REQUEST
+
+    @property
+    def message(self) -> str:
+        return 'Аренда бота уже остановлена.'
+
+
+@dataclass(eq=False)
+class RentalAlreadyActiveException(DomainErrorException):
+    status_code: int = status.HTTP_400_BAD_REQUEST
+
+    @property
+    def message(self) -> str:
+        return 'Аренда бота уже активна.'
