@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 from datetime import datetime
 from src.domain.common.entity import BaseEntity
-from src.domain.bot.exception import BotAlreadyDeletedException, BotAlreadyActivatedException, BotAlreadyDeactivatedException
+from src.domain.bot.exception import BotAlreadyDeletedException, BotAlreadyActivatedException, BotAlreadyDeactivatedException, RentalAlreadyActiveException, RentalAlreadyStoppedException
 from src.domain.bot.value_object import BotName, BotPrice, BotDescription
 from typing import TYPE_CHECKING
 
@@ -87,10 +87,40 @@ class BotRentalEntity(BaseEntity):
     bot: BotEntity
 
     @classmethod
-    def from_dict(cls, data: dict) -> 'BotRentalEntity':
-        from src.domain.user.entity import UserEntity
-        from src.domain.bot.entity import BotEntity
+    def create_rental(
+        cls,
+        user_id: int,
+        bot_id: int,
+        token: str,
+        rented_until: datetime,
+        user: 'UserEntity',
+        bot: BotEntity,
+    ) -> 'BotRentalEntity':
+        
+        return cls(
+            user_id=user_id,
+            bot_id=bot_id,
+            token=token,
+            rented_until=rented_until,
+            user=user,
+            bot=bot,
+        )
+    
+    def stop(self) -> None:
 
+        if not self.is_active:
+            raise RentalAlreadyStoppedException()
+        self.is_active = False
+
+    def start(self) -> None:
+
+        if self.is_active:
+            raise RentalAlreadyActiveException()
+        self.is_active = True
+
+
+    @classmethod
+    def from_dict(cls, data: dict) -> 'BotRentalEntity':
         return cls(
             id=data.get('id'),
             created_at=datetime.fromisoformat(data['created_at']),
