@@ -10,6 +10,14 @@ class UserAlreadyExistsException(DomainErrorException):
     @property
     def message(self) -> str:
         return 'Пользователь уже существует.'
+    
+@dataclass(eq=False)
+class NotEnoughBalanceError(DomainErrorException):
+    status_code: int = status.HTTP_402_PAYMENT_REQUIRED
+
+    @property
+    def message(self) -> str:
+        return 'Недостаточно средств.'
 
 
 @dataclass(eq=False)

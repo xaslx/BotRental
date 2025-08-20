@@ -53,6 +53,10 @@ class UserEntity(BaseEntity):
             block.blocked_until is None or block.blocked_until > now
             for block in self.blocks
         )
+    
+    def add_rental(self, rental: BotRentalEntity) -> None:
+        self.rentals.append(rental)
+
 
     def block(self, days: int, reason: str, admin_id: int) -> BlockedUserEntity:
         if self.is_blocked:
