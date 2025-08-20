@@ -39,7 +39,7 @@ async def send_code(
     use_case: Depends[SendCodeUseCase],
 ) -> SuccessResponse:
     
-    await use_case.execute(telegram_id=user_schema.telegram_id)
+    await use_case.execute(telegram_id=user_schema.telegram_id, ref_id=user_schema.ref_id)
     return SuccessResponse(message='Код отправлен вам в Telegram')
 
 
@@ -66,7 +66,7 @@ async def verify_code(
 
     response.set_cookie(key='access_token', value=access_token, httponly=True, max_age=900)
     response.set_cookie(key='refresh_token', value=refresh_token, httponly=True, max_age=1296000)
-    return UserOutSchema.model_validate(user)
+    return UserOutSchema.model_validate(user.to_dict())
 
     
 @router.post(
