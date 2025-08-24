@@ -1,6 +1,7 @@
-from src.domain.common.exception import DomainErrorException
 from dataclasses import dataclass
+
 from fastapi import status
+from src.domain.common.exception import DomainErrorException
 
 
 @dataclass(eq=False)
@@ -10,8 +11,8 @@ class InvalidPriceException(DomainErrorException):
     @property
     def message(self) -> str:
         return 'Цена должна быть больше 0.'
-    
-    
+
+
 @dataclass(eq=False)
 class InvalidLengthException(DomainErrorException):
     status_code: int = status.HTTP_422_UNPROCESSABLE_ENTITY
@@ -19,7 +20,7 @@ class InvalidLengthException(DomainErrorException):
     @property
     def message(self) -> str:
         return 'Поле не должно быть пустым.'
-    
+
 
 @dataclass(eq=False)
 class BotNotFoundException(DomainErrorException):
@@ -28,7 +29,8 @@ class BotNotFoundException(DomainErrorException):
     @property
     def message(self) -> str:
         return 'Бот не найден.'
-    
+
+
 @dataclass(eq=False)
 class BotCannotBeRentedException(DomainErrorException):
     status_code: int = status.HTTP_400_BAD_REQUEST
@@ -36,7 +38,7 @@ class BotCannotBeRentedException(DomainErrorException):
     @property
     def message(self) -> str:
         return 'Бота сейчас нельзя арендовать.'
-    
+
 
 @dataclass(eq=False)
 class BotAlreadyDeletedException(DomainErrorException):
@@ -45,7 +47,7 @@ class BotAlreadyDeletedException(DomainErrorException):
     @property
     def message(self) -> str:
         return 'Бот уже удален.'
-    
+
 
 @dataclass(eq=False)
 class BotAlreadyActivatedException(DomainErrorException):
@@ -54,7 +56,16 @@ class BotAlreadyActivatedException(DomainErrorException):
     @property
     def message(self) -> str:
         return 'Бот уже активирован.'
-    
+
+
+@dataclass(eq=False)
+class RentalNotFoundException(DomainErrorException):
+    status_code: int = status.HTTP_404_NOT_FOUND
+
+    @property
+    def message(self) -> str:
+        return 'Аренда не найдена.'
+
 
 @dataclass(eq=False)
 class BotAlreadyDeactivatedException(DomainErrorException):
@@ -63,7 +74,7 @@ class BotAlreadyDeactivatedException(DomainErrorException):
     @property
     def message(self) -> str:
         return 'Бот уже деактивирован.'
-    
+
 
 @dataclass(eq=False)
 class RentalAlreadyStoppedException(DomainErrorException):

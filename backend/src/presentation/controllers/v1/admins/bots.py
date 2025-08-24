@@ -1,17 +1,26 @@
+from dishka.integrations.fastapi import FromDishka as Depends
+from dishka.integrations.fastapi import inject
 from fastapi import APIRouter, status
-from dishka.integrations.fastapi import inject, FromDishka as Depends
-from src.application.use_cases.admin.bot.change_status_bot import ActivateBotUseCase, DeactivateBotUseCase
-from src.application.use_cases.admin.bot.update_bot import UpdateBotUseCase
-from src.application.use_cases.admin.bot.delete_bot import DeleteBotUseCase
-from src.application.use_cases.admin.bot.get_all_bots_with_rentals import GetAllBotsWithRentalsUseCase
-from src.presentation.schemas.error import ErrorSchema
-from src.domain.bot.entity import BotEntity
-from src.presentation.schemas.bot import BotOutSchema, CreateBotSchema, UpdateBotSchema
+from src.application.use_cases.admin.bot.change_status_bot import (
+    ActivateBotUseCase,
+    DeactivateBotUseCase,
+)
 from src.application.use_cases.admin.bot.create_bot import CreateNewBotUseCase
+from src.application.use_cases.admin.bot.delete_bot import DeleteBotUseCase
+from src.application.use_cases.admin.bot.get_all_bots_with_rentals import (
+    GetAllBotsWithRentalsUseCase,
+)
+from src.application.use_cases.admin.bot.update_bot import UpdateBotUseCase
+from src.domain.bot.entity import BotEntity
 from src.domain.user.entity import UserEntity
 from src.presentation.decorators.check_role import check_role
-from src.presentation.schemas.bot import BotAdminOutSchema
-
+from src.presentation.schemas.bot import (
+    BotAdminOutSchema,
+    BotOutSchema,
+    CreateBotSchema,
+    UpdateBotSchema,
+)
+from src.presentation.schemas.error import ErrorSchema
 
 router: APIRouter = APIRouter()
 
@@ -42,7 +51,6 @@ async def create_bot(
     user: Depends[UserEntity],
     use_case: Depends[CreateNewBotUseCase],
 ) -> BotOutSchema:
-    
     bot: BotEntity = await use_case.execute(bot=new_bot, admin=user)
     return BotOutSchema.model_validate(bot.to_dict())
 
@@ -63,9 +71,8 @@ async def create_bot(
 @check_role(allowed_roles=['dev', 'admin'])
 async def get_all_bots_with_rentals(
     user: Depends[UserEntity],
-    use_case: Depends[GetAllBotsWithRentalsUseCase],       
+    use_case: Depends[GetAllBotsWithRentalsUseCase],
 ) -> list[BotAdminOutSchema] | None:
-    
     result: list[BotEntity] | None = await use_case.execute()
     return [BotAdminOutSchema.model_validate(bot.to_dict()) for bot in result]
 
@@ -75,14 +82,17 @@ async def get_all_bots_with_rentals(
     description='Эндпоинт для обновления бота',
     status_code=status.HTTP_200_OK,
     responses={
-        status.HTTP_200_OK: {'model': BotAdminOutSchema, 'description': 'Bot successfully updated.'},
+        status.HTTP_200_OK: {
+            'model': BotAdminOutSchema,
+            'description': 'Bot successfully updated.',
+        },
         status.HTTP_403_FORBIDDEN: {
             'description': 'User does not have permission to perform this action.',
             'model': ErrorSchema,
         },
         status.HTTP_404_NOT_FOUND: {
             'model': ErrorSchema,
-            'description': 'Bot not found.'
+            'description': 'Bot not found.',
         },
     },
 )
@@ -94,8 +104,9 @@ async def update_bot(
     user: Depends[UserEntity],
     use_case: Depends[UpdateBotUseCase],
 ) -> BotAdminOutSchema:
-    
-    updated_bot: BotEntity = await use_case.execute(bot_id=bot_id, admin=user, update_schema=update_schema)
+    updated_bot: BotEntity = await use_case.execute(
+        bot_id=bot_id, admin=user, update_schema=update_schema
+    )
     return BotAdminOutSchema.model_validate(updated_bot.to_dict())
 
 
@@ -111,14 +122,13 @@ async def update_bot(
         },
         status.HTTP_404_NOT_FOUND: {
             'model': ErrorSchema,
-            'description': 'Bot not found.'
+            'description': 'Bot not found.',
         },
         status.HTTP_400_BAD_REQUEST: {
             'model': ErrorSchema,
-            'description': 'Bot has already been deleted.'
+            'description': 'Bot has already been deleted.',
         },
     },
-
 )
 @inject
 @check_role(allowed_roles=['dev', 'admin'])
@@ -127,7 +137,6 @@ async def delete_bot(
     user: Depends[UserEntity],
     use_case: Depends[DeleteBotUseCase],
 ) -> None:
-    
     await use_case.execute(bot_id=bot_id, admin=user)
 
 
@@ -136,18 +145,21 @@ async def delete_bot(
     description='Эндпоинт для активации бота',
     status_code=status.HTTP_200_OK,
     responses={
-        status.HTTP_200_OK: {'model': BotAdminOutSchema, 'description': 'Bot successfully updated.'},
+        status.HTTP_200_OK: {
+            'model': BotAdminOutSchema,
+            'description': 'Bot successfully updated.',
+        },
         status.HTTP_403_FORBIDDEN: {
             'description': 'User does not have permission to perform this action.',
             'model': ErrorSchema,
         },
         status.HTTP_404_NOT_FOUND: {
             'model': ErrorSchema,
-            'description': 'Bot not found.'
+            'description': 'Bot not found.',
         },
         status.HTTP_400_BAD_REQUEST: {
             'model': ErrorSchema,
-            'description': 'Bot already activated.'
+            'description': 'Bot already activated.',
         },
     },
 )
@@ -158,7 +170,6 @@ async def activate_bot(
     user: Depends[UserEntity],
     use_case: Depends[ActivateBotUseCase],
 ) -> BotAdminOutSchema:
-    
     bot: BotEntity = await use_case.execute(bot_id=bot_id, admin=user)
     return BotAdminOutSchema.model_validate(bot.to_dict())
 
@@ -168,18 +179,21 @@ async def activate_bot(
     description='Эндпоинт для активации бота',
     status_code=status.HTTP_200_OK,
     responses={
-        status.HTTP_200_OK: {'model': BotAdminOutSchema, 'description': 'Bot successfully updated.'},
+        status.HTTP_200_OK: {
+            'model': BotAdminOutSchema,
+            'description': 'Bot successfully updated.',
+        },
         status.HTTP_403_FORBIDDEN: {
             'description': 'User does not have permission to perform this action.',
             'model': ErrorSchema,
         },
         status.HTTP_404_NOT_FOUND: {
             'model': ErrorSchema,
-            'description': 'Bot not found.'
+            'description': 'Bot not found.',
         },
         status.HTTP_400_BAD_REQUEST: {
             'model': ErrorSchema,
-            'description': 'Bot already deactivated.'
+            'description': 'Bot already deactivated.',
         },
     },
 )
@@ -190,6 +204,5 @@ async def deactivate_bot(
     user: Depends[UserEntity],
     use_case: Depends[DeactivateBotUseCase],
 ) -> BotAdminOutSchema:
-    
     bot: BotEntity = await use_case.execute(bot_id=bot_id, admin=user)
     return BotAdminOutSchema.model_validate(bot.to_dict())

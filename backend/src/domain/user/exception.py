@@ -1,6 +1,7 @@
-from src.domain.common.exception import DomainErrorException
-from fastapi import status
 from dataclasses import dataclass
+
+from fastapi import status
+from src.domain.common.exception import DomainErrorException
 
 
 @dataclass(eq=False)
@@ -10,7 +11,8 @@ class UserAlreadyExistsException(DomainErrorException):
     @property
     def message(self) -> str:
         return 'Пользователь уже существует.'
-    
+
+
 @dataclass(eq=False)
 class NotEnoughBalanceError(DomainErrorException):
     status_code: int = status.HTTP_402_PAYMENT_REQUIRED
@@ -31,11 +33,12 @@ class UserNotFoundException(DomainErrorException):
 
 @dataclass(eq=False)
 class PermissionDeniedException(DomainErrorException):
-    status_code: int = status.HTTP_403_FORBIDDEN 
+    status_code: int = status.HTTP_403_FORBIDDEN
 
     @property
     def message(self) -> str:
         return 'Недостаточно прав.'
+
 
 @dataclass(eq=False)
 class UserIsNotPresentException(DomainErrorException):
@@ -53,7 +56,6 @@ class UserNotAuthenticatedException(DomainErrorException):
     @property
     def message(self) -> str:
         return 'Пользователь не аутентифицирован.'
-    
 
 
 @dataclass(eq=False)
@@ -64,6 +66,7 @@ class InvalidTelegramIDTypeException(DomainErrorException):
     def message(self) -> str:
         return 'Telegram ID должен быть в виде целого числа.'
 
+
 @dataclass(eq=False)
 class InvalidTelegramIDValueException(DomainErrorException):
     status_code: int = status.HTTP_422_UNPROCESSABLE_ENTITY
@@ -71,7 +74,7 @@ class InvalidTelegramIDValueException(DomainErrorException):
     @property
     def message(self) -> str:
         return 'Telegram ID должен быть больше 0.'
-    
+
 
 @dataclass(eq=False)
 class InvalidCodeException(DomainErrorException):
@@ -80,43 +83,44 @@ class InvalidCodeException(DomainErrorException):
     @property
     def message(self) -> str:
         return 'Неверный код. Попробуйте еще раз.'
-    
+
 
 @dataclass(eq=False)
 class TooManyCodeRequestsException(DomainErrorException):
     status_code: int = status.HTTP_429_TOO_MANY_REQUESTS
-    
+
     @property
     def message(self) -> str:
         return 'Код уже был отправлен, попробуйте через 5 минут.'
-    
+
+
 @dataclass(eq=False)
 class InvalidBlockDurationException(DomainErrorException):
     status_code: int = status.HTTP_400_BAD_REQUEST
-    
+
     @property
     def message(self) -> str:
         return 'Количество дней должно быть больше 1.'
-    
+
 
 @dataclass(eq=False)
 class AlreadyBlockedException(DomainErrorException):
     status_code: int = status.HTTP_400_BAD_REQUEST
-    
+
     @property
     def message(self) -> str:
         return 'Пользователь уже заблокирован.'
-    
+
 
 @dataclass(eq=False)
 class ActiveBlockNotFoundException(DomainErrorException):
     status_code: int = status.HTTP_400_BAD_REQUEST
-    
+
     @property
     def message(self) -> str:
         return 'Активная блокировка не найдена.'
-    
-    
+
+
 @dataclass(eq=False)
 class SelfBlockException(DomainErrorException):
     status_code: int = status.HTTP_400_BAD_REQUEST
@@ -124,7 +128,7 @@ class SelfBlockException(DomainErrorException):
     @property
     def message(self) -> str:
         return 'Администратор не может заблокировать самого себя.'
-    
+
 
 @dataclass(eq=False)
 class ReferrerAlreadyAssignedException(DomainErrorException):
@@ -133,6 +137,7 @@ class ReferrerAlreadyAssignedException(DomainErrorException):
     @property
     def message(self) -> str:
         return 'Реферер уже назначен для этого пользователя.'
+
 
 @dataclass(eq=False)
 class ReferrerNotFoundException(DomainErrorException):

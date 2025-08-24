@@ -1,7 +1,7 @@
+from datetime import datetime
+
 from pydantic import BaseModel, ConfigDict, Field
-from datetime import datetime
 from src.domain.user.entity import Role
-from datetime import datetime
 
 
 class CheckCodeSchema(BaseModel):
@@ -37,7 +37,6 @@ class BotRentalOutSchema(BaseModel):
 
 
 class ReferralOutSchema(BaseModel):
-    id: int | None
     referrer_id: int
     referral_id: int
     telegram_id: int
@@ -45,6 +44,7 @@ class ReferralOutSchema(BaseModel):
     total_bonus: int
 
     model_config = ConfigDict(from_attributes=True)
+
 
 class UserOutSchema(BaseModel):
     id: int
@@ -67,7 +67,6 @@ class UserAdminViewSchema(UserOutSchema):
     model_config = ConfigDict(from_attributes=True)
 
 
-
 class UpdateUserRole(BaseModel):
     role: Role
 
@@ -75,3 +74,7 @@ class UpdateUserRole(BaseModel):
 class UserBlockSchema(BaseModel):
     reason: str
     days: int
+
+
+class UpdateBalance(BaseModel):
+    amount: int = Field(gt=0, le=10000)

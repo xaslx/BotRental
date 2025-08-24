@@ -1,6 +1,6 @@
 from os import environ as env
 
-from pydantic import Field, BaseModel
+from pydantic import BaseModel, Field
 
 
 class PostgresConfig(BaseModel):
@@ -31,6 +31,13 @@ class JWT(BaseModel):
     algorithm: str = Field(alias='ALGORITHM')
     access_token_expire_minutes: int = Field(alias='ACCESS_TOKEN_EXPIRE_MINUTES')
     refresh_token_expire_days: int = Field(alias='REFRESH_TOKEN_EXPIRE_DAYS')
+
+
+class Robokassa(BaseModel):
+    robokassa_login: str = Field(alias='ROBOKASSA_LOGIN')
+    robokassa_password1: str = Field(alias='ROBOKASSA_PASSWORD1')
+    robokassa_password2: str = Field(alias='ROBOKASSA_PASSWORD2')
+    robokassa_test: str = Field(alias='ROBOKASSA_TEST')
 
 
 class Config(BaseModel):

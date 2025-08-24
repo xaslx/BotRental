@@ -1,7 +1,7 @@
 from datetime import datetime
-from pydantic import ConfigDict, BaseModel, Field
 from typing import Literal
-from src.presentation.schemas.user import UserOutSchema
+
+from pydantic import BaseModel, ConfigDict
 
 
 class CreateBotSchema(BaseModel):
@@ -26,7 +26,6 @@ class BotOutSchema(CreateBotSchema):
     model_config = ConfigDict(from_attributes=True)
 
 
-
 class BotRentalOutSchema(BaseModel):
     id: int
     user_id: int
@@ -34,7 +33,6 @@ class BotRentalOutSchema(BaseModel):
     token: str
     rented_until: datetime
     is_active: bool
-
 
     model_config = ConfigDict(from_attributes=True)
 

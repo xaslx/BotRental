@@ -1,9 +1,11 @@
-from src.infrastructure.taskiq.broker import broker
+import asyncio
+import logging
+import os
+
 import psutil
 from aiogram import Bot
 from src.const import MB
-import os
-import logging
+from src.infrastructure.taskiq.broker import broker
 
 token: str = os.getenv(key='TELEGRAM_TOKEN_BOT')
 
@@ -25,13 +27,25 @@ file_handler.setFormatter(formatter)
 logger.addHandler(file_handler)
 
 
-
-@broker.task(retry=3)
+@broker.task
 async def send_notification(user_id: int, text: str) -> None:
     try:
         await bot.send_message(chat_id=user_id, text=text)
     except Exception as e:
-        logger.error(f'Ошибка в send_notification для user_id={user_id}: {e}', exc_info=True)
+        logger.error(
+            f'Ошибка в send_notification для user_id={user_id}: {e}', exc_info=True
+        )
+
+
+@broker.task
+async def send_notification_for_admin(text: str) -> None:
+    try:
+        await bot.send_message(chat_id=ADMIN_CHAT_ID, text=text)
+    except Exception as e:
+        logger.error(
+            f'Ошибка в send_notification для user_id={ADMIN_CHAT_ID}: {e}',
+            exc_info=True,
+        )
 
 
 @broker.task(schedule=[{'cron': '*/10 * * * *'}])
@@ -66,3 +80,15 @@ async def send_system_stats() -> None:
 
     except Exception as e:
         logger.error(f'Ошибка в send_system_stats: {e}', exc_info=True)
+
+
+@broker.task
+async def send_copy_task(to_chat_id: int, from_chat_id: int, from_message_id: int):
+    try:
+        await bot.copy_message(
+            chat_id=to_chat_id, from_chat_id=from_chat_id, message_id=from_message_id
+        )
+        await asyncio.sleep(0.4)
+    except Exception as e:
+        print(f'Ошибка рассылки пользователю {to_chat_id}: {e}')
+        raise e

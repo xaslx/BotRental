@@ -1,6 +1,7 @@
 from dataclasses import dataclass
-from src.domain.common.value_object import BaseValueObject
+
 from src.domain.bot.exception import InvalidLengthException, InvalidPriceException
+from src.domain.common.value_object import BaseValueObject
 
 
 @dataclass(frozen=True)

@@ -1,11 +1,11 @@
-from src.domain.common.exception import DomainErrorException
 from dataclasses import dataclass
+
 from fastapi import status
+from src.domain.common.exception import DomainErrorException
 
 
 @dataclass(eq=False)
-class BalanceException(DomainErrorException):
-    ...
+class BalanceException(DomainErrorException): ...
 
 
 @dataclass(eq=False)

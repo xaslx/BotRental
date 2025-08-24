@@ -1,7 +1,7 @@
 from functools import wraps
-from src.domain.user.exception import PermissionDeniedException
-from src.domain.user.entity import UserEntity
 
+from src.domain.user.entity import UserEntity
+from src.domain.user.exception import PermissionDeniedException
 
 
 def check_role(allowed_roles: list[str]):
@@ -13,5 +13,7 @@ def check_role(allowed_roles: list[str]):
             if not user or user.role not in allowed_roles:
                 raise PermissionDeniedException()
             return await func(*args, **kwargs)
+
         return wrapper
+
     return decorator

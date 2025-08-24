@@ -4,14 +4,14 @@ from dishka.integrations.fastapi import FromDishka as Depends
 from dishka.integrations.fastapi import inject
 from fastapi import APIRouter, HTTPException, Request, status
 from fastapi.responses import Response
-from src.application.use_cases.user.auth import (RefreshTokenUseCase,
-                                                 SendCodeUseCase,
-                                                 VerifyCodeUseCase)
+from src.application.use_cases.user.auth import (
+    RefreshTokenUseCase,
+    SendCodeUseCase,
+    VerifyCodeUseCase,
+)
 from src.presentation.schemas.error import ErrorSchema
 from src.presentation.schemas.success import SuccessResponse
-from src.presentation.schemas.user import (CheckCodeSchema, SendCodeSchema,
-                                           UserOutSchema)
-
+from src.presentation.schemas.user import CheckCodeSchema, SendCodeSchema, UserOutSchema
 
 logger = logging.getLogger(__name__)
 router: APIRouter = APIRouter()
@@ -38,8 +38,9 @@ async def send_code(
     user_schema: SendCodeSchema,
     use_case: Depends[SendCodeUseCase],
 ) -> SuccessResponse:
-    
-    await use_case.execute(telegram_id=user_schema.telegram_id, ref_id=user_schema.ref_id)
+    await use_case.execute(
+        telegram_id=user_schema.telegram_id, ref_id=user_schema.ref_id
+    )
     return SuccessResponse(message='Код отправлен вам в Telegram')
 
 
@@ -61,14 +62,17 @@ async def verify_code(
     use_case: Depends[VerifyCodeUseCase],
     response: Response,
 ) -> UserOutSchema:
-    
     user, access_token, refresh_token = await use_case.execute(schema=code_schema)
 
-    response.set_cookie(key='access_token', value=access_token, httponly=True, max_age=900)
-    response.set_cookie(key='refresh_token', value=refresh_token, httponly=True, max_age=1296000)
+    response.set_cookie(
+        key='access_token', value=access_token, httponly=True, max_age=900
+    )
+    response.set_cookie(
+        key='refresh_token', value=refresh_token, httponly=True, max_age=1296000
+    )
     return UserOutSchema.model_validate(user.to_dict())
 
-    
+
 @router.post(
     '/refresh-token',
     status_code=status.HTTP_200_OK,
@@ -83,7 +87,6 @@ async def verify_code(
             'description': 'Refresh token отсутствует или недействителен',
         },
     },
-
 )
 @inject
 async def refresh_token(
@@ -91,16 +94,17 @@ async def refresh_token(
     request: Request,
     use_case: Depends[RefreshTokenUseCase],
 ) -> SuccessResponse:
-    
     token: str | None = request.cookies.get('refresh_token')
     if token is None:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Refresh token not found')
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail='Refresh token not found'
+        )
 
     new_access_token: str = await use_case.execute(refresh_token=token)
-    response.set_cookie(key='access_token', value=new_access_token, httponly=True, max_age=900)
+    response.set_cookie(
+        key='access_token', value=new_access_token, httponly=True, max_age=900
+    )
     return SuccessResponse(message='Access token успешно обновлён')
-
-
 
 
 @router.post(
@@ -115,8 +119,6 @@ async def refresh_token(
     },
 )
 async def logout_user(response: Response) -> SuccessResponse:
-
     response.delete_cookie(key='access_token')
     response.delete_cookie(key='refresh_token')
     return SuccessResponse(message='Вы успешно вышли из системы')
-

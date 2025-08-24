@@ -1,20 +1,18 @@
-from aiogram.filters import Command, CommandStart, StateFilter
-from aiogram.types import Message
-from aiogram import Router
-from aiogram.fsm.state import default_state
 import logging
 
+from aiogram import Router
+from aiogram.filters import Command, CommandStart, StateFilter
+from aiogram.fsm.state import default_state
+from aiogram.types import Message
 
 router: Router = Router()
 logger = logging.getLogger(__name__)
 
 
-
 @router.message(CommandStart(), StateFilter(default_state))
 async def start_cmd(message: Message):
     await message.answer(
-        text=
-        'Привет, это бот для сайта <b>BotRental</b>\n'
+        text='Привет, это бот для сайта <b>BotRental</b>\n'
         'Доступные команды:\n'
         '/id - Посмотреть свой ID'
     )

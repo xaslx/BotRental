@@ -1,12 +1,13 @@
-from abc import ABC, abstractmethod
+import logging
 from dataclasses import dataclass
-from src.infrastructure.repositories.telegram.base import BaseTelegramRepository
+
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.infrastructure.database.models.telegram_users import TelegramUser
-from sqlalchemy import select
-import logging
+from src.infrastructure.repositories.telegram.base import BaseTelegramRepository
 
 logger = logging.getLogger(__name__)
+
 
 @dataclass
 class SQLAlchemyTelegramRepository(BaseTelegramRepository):
@@ -25,8 +26,9 @@ class SQLAlchemyTelegramRepository(BaseTelegramRepository):
                 await self._session.refresh(user)
             return user
         except Exception as e:
-            logger.error(f"Ошибка при добавлении пользователя с telegram_id={telegram_id}: {e}")
-
+            logger.error(
+                f'Ошибка при добавлении пользователя с telegram_id={telegram_id}: {e}'
+            )
 
     async def get_all_users(self) -> list[TelegramUser]:
         try:
@@ -34,6 +36,5 @@ class SQLAlchemyTelegramRepository(BaseTelegramRepository):
             users = result.scalars().all()
             return users
         except Exception as e:
-            logger.error(f"Ошибка при получении списка пользователей: {e}")
+            logger.error(f'Ошибка при получении списка пользователей: {e}')
             return []
-

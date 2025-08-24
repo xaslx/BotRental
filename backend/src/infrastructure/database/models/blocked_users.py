@@ -1,11 +1,11 @@
+from datetime import datetime
+from typing import TYPE_CHECKING
+
+from sqlalchemy import DateTime, ForeignKey
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+from src.const import MOSCOW_TZ
 from src.domain.user.blocked_user import BlockedUserEntity
 from src.infrastructure.database.models.base import Base
-from sqlalchemy.orm import Mapped, mapped_column, relationship
-from datetime import datetime
-from sqlalchemy import ForeignKey, DateTime
-from typing import TYPE_CHECKING
-from src.const import MOSCOW_TZ
-
 
 if TYPE_CHECKING:
     from src.infrastructure.database.models.user import User
@@ -19,8 +19,12 @@ class BlockedUser(Base):
     reason: Mapped[str]
     blocked_by: Mapped[int] = mapped_column(ForeignKey('users.id'))
 
-    user: Mapped['User'] = relationship('User', foreign_keys=[user_id], back_populates='blocks')
-    blocker: Mapped['User'] = relationship('User' , foreign_keys=[blocked_by], backref='blocks_made')
+    user: Mapped['User'] = relationship(
+        'User', foreign_keys=[user_id], back_populates='blocks'
+    )
+    blocker: Mapped['User'] = relationship(
+        'User', foreign_keys=[blocked_by], backref='blocks_made'
+    )
 
     def to_entity(self) -> BlockedUserEntity:
         return BlockedUserEntity(
@@ -32,7 +36,6 @@ class BlockedUser(Base):
             created_at=self.created_at.astimezone(MOSCOW_TZ),
             updated_at=self.updated_at.astimezone(MOSCOW_TZ),
         )
-    
 
     @classmethod
     def from_entity(cls, entity: BlockedUserEntity) -> 'BlockedUser':

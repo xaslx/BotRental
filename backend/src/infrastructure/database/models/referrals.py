@@ -1,16 +1,13 @@
-from sqlalchemy import ForeignKey, DateTime, UniqueConstraint, BigInteger
-from sqlalchemy.orm import Mapped, mapped_column, relationship
 from datetime import datetime
-from src.infrastructure.database.models.base import Base
-from src.domain.referral.entity import ReferralEntity
 from typing import TYPE_CHECKING
 
-
+from sqlalchemy import BigInteger, DateTime, ForeignKey, UniqueConstraint
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+from src.domain.referral.entity import ReferralEntity
+from src.infrastructure.database.models.base import Base
 
 if TYPE_CHECKING:
     from src.infrastructure.database.models.user import User
-
-
 
 
 class Referral(Base):

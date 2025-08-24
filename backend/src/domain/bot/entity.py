@@ -1,12 +1,20 @@
 from dataclasses import dataclass, field
 from datetime import datetime
-from src.domain.common.entity import BaseEntity
-from src.domain.bot.exception import BotAlreadyDeletedException, BotAlreadyActivatedException, BotAlreadyDeactivatedException, RentalAlreadyActiveException, RentalAlreadyStoppedException
-from src.domain.bot.value_object import BotName, BotPrice, BotDescription
 from typing import TYPE_CHECKING
+
+from src.domain.bot.exception import (
+    BotAlreadyActivatedException,
+    BotAlreadyDeactivatedException,
+    BotAlreadyDeletedException,
+    RentalAlreadyActiveException,
+    RentalAlreadyStoppedException,
+)
+from src.domain.bot.value_object import BotDescription, BotName, BotPrice
+from src.domain.common.entity import BaseEntity
 
 if TYPE_CHECKING:
     from src.domain.user.entity import UserEntity
+
 
 @dataclass
 class BotEntity(BaseEntity):
@@ -26,13 +34,13 @@ class BotEntity(BaseEntity):
         )
 
     def update(
-            self, *, 
-            name: str | None = None,
-            description: str | None = None,
-            price: int | None = None,
-            is_available: bool | None = None,
-        ):
-
+        self,
+        *,
+        name: str | None = None,
+        description: str | None = None,
+        price: int | None = None,
+        is_available: bool | None = None,
+    ):
         if name is not None:
             self.name = BotName(value=name)
 
@@ -71,7 +79,9 @@ class BotEntity(BaseEntity):
             'price': self.price.to_raw(),
             'is_available': self.is_available,
             'is_deleted': self.is_deleted,
-            'rentals': [rental.to_dict() for rental in self.rentals] if self.rentals else [],
+            'rentals': [rental.to_dict() for rental in self.rentals]
+            if self.rentals
+            else [],
         }
 
 
@@ -96,7 +106,6 @@ class BotRentalEntity(BaseEntity):
         user: 'UserEntity',
         bot: BotEntity,
     ) -> 'BotRentalEntity':
-        
         return cls(
             user_id=user_id,
             bot_id=bot_id,
@@ -105,19 +114,16 @@ class BotRentalEntity(BaseEntity):
             user=user,
             bot=bot,
         )
-    
-    def stop(self) -> None:
 
+    def stop(self) -> None:
         if not self.is_active:
             raise RentalAlreadyStoppedException()
         self.is_active = False
 
     def start(self) -> None:
-
         if self.is_active:
             raise RentalAlreadyActiveException()
         self.is_active = True
-
 
     @classmethod
     def from_dict(cls, data: dict) -> 'BotRentalEntity':
@@ -128,7 +134,9 @@ class BotRentalEntity(BaseEntity):
             user_id=data['user_id'],
             bot_id=data['bot_id'],
             token=data['token'],
-            rented_until=datetime.fromisoformat(data['rented_until']) if data.get('rented_until') else None,
+            rented_until=datetime.fromisoformat(data['rented_until'])
+            if data.get('rented_until')
+            else None,
             is_active=data.get('is_active', True),
             user=UserEntity.from_dict(data['user']) if data.get('user') else None,
             bot=BotEntity.from_dict(data['bot']) if data.get('bot') else None,
@@ -142,7 +150,9 @@ class BotRentalEntity(BaseEntity):
             'user_id': self.user_id,
             'bot_id': self.bot_id,
             'token': self.token,
-            'rented_until': self.rented_until.isoformat() if self.rented_until else None,
+            'rented_until': self.rented_until.isoformat()
+            if self.rented_until
+            else None,
             'is_active': self.is_active,
             'user': self.user.to_dict() if self.user else None,
             'bot': self.bot.to_dict() if self.bot else None,

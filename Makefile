@@ -14,7 +14,7 @@ TASKIQ_FILE = docker_compose/taskiq_worker.yaml
 
 .PHONY: app
 app:
-	${DC} -f ${APP_FILE} -f ${STORAGES_FILE} -f ${BROKER_FILE} -f ${TASKIQ_FILE} -f ${LOGS_MONITORING} -f ${TELEGRAM_BOT_FILE} ${ENV} up --build -d
+	${DC} -f ${APP_FILE} -f ${STORAGES_FILE} -f ${BROKER_FILE} -f ${TASKIQ_FILE} -f ${TELEGRAM_BOT_FILE} ${ENV} up --build -d
 
 
 .PHONY: app-logs

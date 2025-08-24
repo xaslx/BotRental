@@ -1,15 +1,14 @@
+from dishka.integrations.fastapi import FromDishka as Depends
+from dishka.integrations.fastapi import inject
 from fastapi import APIRouter, status
-from dishka.integrations.fastapi import inject, FromDishka as Depends
-from src.application.use_cases.user.bot.start_bot import StartBotRentalUseCase
-from src.presentation.schemas.success import SuccessResponse
-from src.application.use_cases.user.bot.stop_bot import StopBotRentalUseCase
-from src.presentation.schemas.error import ErrorSchema
-from src.domain.bot.entity import BotRentalEntity
 from src.application.use_cases.user.bot.rent_bot import RentBotUseCase
-from src.presentation.schemas.bot import BotRentalOutSchema, CreateBotRentSchema
+from src.application.use_cases.user.bot.start_bot import StartBotRentalUseCase
+from src.application.use_cases.user.bot.stop_bot import StopBotRentalUseCase
+from src.domain.bot.entity import BotRentalEntity
 from src.domain.user.entity import UserEntity
-
-
+from src.presentation.schemas.bot import BotRentalOutSchema, CreateBotRentSchema
+from src.presentation.schemas.error import ErrorSchema
+from src.presentation.schemas.success import SuccessResponse
 
 router: APIRouter = APIRouter()
 
@@ -22,9 +21,7 @@ router: APIRouter = APIRouter()
         status.HTTP_200_OK: {'model': BotRentalOutSchema},
         status.HTTP_400_BAD_REQUEST: {
             'model': ErrorSchema,
-            'description': (
-                'Бота нельзя арендовать или аренда некорректна. '
-            ),
+            'description': ('Бота нельзя арендовать или аренда некорректна. '),
         },
         status.HTTP_402_PAYMENT_REQUIRED: {
             'model': ErrorSchema,
@@ -34,7 +31,10 @@ router: APIRouter = APIRouter()
             'model': ErrorSchema,
             'description': 'Бот не найден.',
         },
-        status.HTTP_401_UNAUTHORIZED: {'model': ErrorSchema, 'description': 'Пользователь не аутентифицирован'},
+        status.HTTP_401_UNAUTHORIZED: {
+            'model': ErrorSchema,
+            'description': 'Пользователь не аутентифицирован',
+        },
     },
 )
 @inject
@@ -44,10 +44,10 @@ async def rent_bot(
     user: Depends[UserEntity],
     use_case: Depends[RentBotUseCase],
 ) -> BotRentalOutSchema:
-    
-    res: BotRentalEntity = await use_case.execute(bot_id=bot_id, user=user, schema=new_rent)
+    res: BotRentalEntity = await use_case.execute(
+        bot_id=bot_id, user=user, schema=new_rent
+    )
     return BotRentalOutSchema.model_validate(res)
-
 
 
 @router.post(
@@ -56,11 +56,22 @@ async def rent_bot(
     status_code=status.HTTP_200_OK,
     responses={
         status.HTTP_200_OK: {'model': SuccessResponse},
-        status.HTTP_401_UNAUTHORIZED: {'model': ErrorSchema, 'description': 'Пользователь не аутентифицирован'},
-        status.HTTP_403_FORBIDDEN: {'model': ErrorSchema, 'description': 'Недостаточно прав'},
-        status.HTTP_404_NOT_FOUND: {'model': ErrorSchema, 'description': 'Аренда не найдена'},
-        status.HTTP_400_BAD_REQUEST: {'model': ErrorSchema, 'description': 'Аренда уже остановлена.'},
-
+        status.HTTP_401_UNAUTHORIZED: {
+            'model': ErrorSchema,
+            'description': 'Пользователь не аутентифицирован',
+        },
+        status.HTTP_403_FORBIDDEN: {
+            'model': ErrorSchema,
+            'description': 'Недостаточно прав',
+        },
+        status.HTTP_404_NOT_FOUND: {
+            'model': ErrorSchema,
+            'description': 'Аренда не найдена',
+        },
+        status.HTTP_400_BAD_REQUEST: {
+            'model': ErrorSchema,
+            'description': 'Аренда уже остановлена.',
+        },
     },
 )
 @inject
@@ -69,10 +80,8 @@ async def stop_active_rental(
     user: Depends[UserEntity],
     use_case: Depends[StopBotRentalUseCase],
 ) -> SuccessResponse:
-    
     await use_case.execute(rental_id=rental_id, user=user)
     return SuccessResponse(message='Аренда бота остановлена.')
-
 
 
 @router.post(
@@ -81,11 +90,22 @@ async def stop_active_rental(
     status_code=status.HTTP_200_OK,
     responses={
         status.HTTP_200_OK: {'model': SuccessResponse},
-        status.HTTP_401_UNAUTHORIZED: {'model': ErrorSchema, 'description': 'Пользователь не аутентифицирован'},
-        status.HTTP_403_FORBIDDEN: {'model': ErrorSchema, 'description': 'Недостаточно прав'},
-        status.HTTP_404_NOT_FOUND: {'model': ErrorSchema, 'description': 'Аренда не найдена'},
-        status.HTTP_400_BAD_REQUEST: {'model': ErrorSchema, 'description': 'Аренда уже активна.'},
-
+        status.HTTP_401_UNAUTHORIZED: {
+            'model': ErrorSchema,
+            'description': 'Пользователь не аутентифицирован',
+        },
+        status.HTTP_403_FORBIDDEN: {
+            'model': ErrorSchema,
+            'description': 'Недостаточно прав',
+        },
+        status.HTTP_404_NOT_FOUND: {
+            'model': ErrorSchema,
+            'description': 'Аренда не найдена',
+        },
+        status.HTTP_400_BAD_REQUEST: {
+            'model': ErrorSchema,
+            'description': 'Аренда уже активна.',
+        },
     },
 )
 @inject
@@ -94,6 +114,5 @@ async def start_active_rental(
     user: Depends[UserEntity],
     use_case: Depends[StartBotRentalUseCase],
 ) -> SuccessResponse:
-    
     await use_case.execute(rental_id=rental_id, user=user)
     return SuccessResponse(message='Аренда бота включена.')

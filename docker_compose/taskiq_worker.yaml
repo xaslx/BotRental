@@ -16,7 +16,6 @@ services:
     networks:
       - backend
 
-
   taskiq-scheduler:
     build:
       context: ..

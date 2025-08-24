@@ -1,26 +1,27 @@
-from enum import StrEnum
 from dataclasses import dataclass, field
 from datetime import datetime
-from src.domain.referral.entity import ReferralEntity
-from src.domain.common.entity import BaseEntity
-from src.domain.user.value_object import TelegramId
+from enum import StrEnum
+
 from src.domain.balance.value_object import Balance
+from src.domain.bot.entity import BotRentalEntity
+from src.domain.common.entity import BaseEntity
+from src.domain.referral.entity import ReferralEntity
 from src.domain.user.blocked_user import BlockedUserEntity
 from src.domain.user.exception import (
+    ActiveBlockNotFoundException,
     AlreadyBlockedException,
     InvalidBlockDurationException,
-    ActiveBlockNotFoundException,
     ReferrerAlreadyAssignedException,
     SelfReferralException,
 )
-
-from src.domain.bot.entity import BotRentalEntity
+from src.domain.user.value_object import TelegramId
 
 
 class Role(StrEnum):
     USER = 'user'
     ADMIN = 'admin'
     DEV = 'dev'
+
 
 BONUS_AMOUNT: int = 50
 WELCOME_BONUS: int = 100
@@ -38,7 +39,6 @@ class UserEntity(BaseEntity):
     rentals: list[BotRentalEntity] = field(default_factory=list)
     referrals: list[ReferralEntity] = field(default_factory=list)
 
-
     def add_welcome_bonus(self) -> None:
         self.deposit(amount=WELCOME_BONUS)
 
@@ -53,10 +53,9 @@ class UserEntity(BaseEntity):
             block.blocked_until is None or block.blocked_until > now
             for block in self.blocks
         )
-    
+
     def add_rental(self, rental: BotRentalEntity) -> None:
         self.rentals.append(rental)
-
 
     def block(self, days: int, reason: str, admin_id: int) -> BlockedUserEntity:
         if self.is_blocked:
@@ -81,7 +80,7 @@ class UserEntity(BaseEntity):
             if block.blocked_until is None or block.blocked_until > now:
                 block.unblock()
                 return block
-            
+
         raise ActiveBlockNotFoundException()
 
     def deposit(self, amount: int) -> None:
@@ -103,7 +102,6 @@ class UserEntity(BaseEntity):
             raise SelfReferralException()
         self.referrer_id = referrer_id
 
-
     def add_referral_bonus(self) -> None:
         self.deposit(BONUS_AMOUNT)
 
@@ -123,7 +121,6 @@ class UserEntity(BaseEntity):
             'total_bonus_received': self.total_bonus_received,
         }
 
-
     @classmethod
     def from_dict(cls, data: dict) -> 'UserEntity':
         return cls(
@@ -140,4 +137,3 @@ class UserEntity(BaseEntity):
             referrer_id=data.get('referrer_id'),
             total_bonus_received=data.get('total_bonus_received', 0),
         )
-

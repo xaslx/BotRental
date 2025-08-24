@@ -1,11 +1,12 @@
-from src.domain.common.exception import DomainErrorException
-from fastapi import status
 from dataclasses import dataclass
+
+from fastapi import status
+from src.domain.common.exception import DomainErrorException
 
 
 @dataclass(eq=False)
 class TokenExpiredException(DomainErrorException):
-    status_code = status.HTTP_401_UNAUTHORIZED
+    status_code: int = status.HTTP_401_UNAUTHORIZED
 
     @property
     def message(self) -> str:

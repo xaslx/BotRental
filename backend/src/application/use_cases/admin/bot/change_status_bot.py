@@ -1,12 +1,12 @@
-from dataclasses import dataclass
-from typing import Callable
 import logging
+from collections.abc import Callable
+from dataclasses import dataclass
+
 from src.domain.bot.entity import BotEntity
 from src.domain.bot.exception import BotNotFoundException
 from src.domain.user.entity import UserEntity
 from src.infrastructure.repositories.bot.base import BaseBotRepository
 from src.infrastructure.taskiq.tasks import send_notification_for_admin
-
 
 logger = logging.getLogger(__name__)
 
@@ -22,19 +22,22 @@ class BaseBotStatusUseCase:
         status_action: Callable[[BotEntity], None],
         action_name: str,
     ) -> BotEntity:
-        
-        bot: BotEntity | None = await self._bot_repository.get_bot_with_rentals(bot_id=bot_id)
-        
+        bot: BotEntity | None = await self._bot_repository.get_bot_with_rentals(
+            bot_id=bot_id
+        )
+
         if not bot:
             raise BotNotFoundException()
-        
+
         status_action(bot)
         updated_bot = await self._bot_repository.update(bot_entity=bot)
-        
+
         logger.info(
             f'Администратор: {admin.telegram_id.to_raw()} {action_name} бота: {bot.id}'
         )
-        await send_notification_for_admin.kiq(text=f'Администратор: {admin.telegram_id.to_raw()} {action_name} бота: {bot.id}')
+        await send_notification_for_admin.kiq(
+            text=f'Администратор: {admin.telegram_id.to_raw()} {action_name} бота: {bot.id}'
+        )
         return updated_bot
 
 

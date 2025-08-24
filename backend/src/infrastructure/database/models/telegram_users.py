@@ -1,10 +1,9 @@
-from typing import Any
-from src.infrastructure.database.models.base import Base
-from sqlalchemy import BigInteger, DateTime, func
-from sqlalchemy.orm import Mapped, mapped_column
-from src.const import MOSCOW_TZ
 from datetime import datetime
 
+from sqlalchemy import BigInteger, DateTime
+from sqlalchemy.orm import Mapped, mapped_column
+from src.const import MOSCOW_TZ
+from src.infrastructure.database.models.base import Base
 
 
 def moscow_now():
@@ -14,7 +13,9 @@ def moscow_now():
 class TelegramUser(Base):
     __tablename__ = 'telegram_users'
 
-    created_at: Mapped[DateTime] = mapped_column(DateTime(timezone=True), default=moscow_now)
+    created_at: Mapped[DateTime] = mapped_column(
+        DateTime(timezone=True), default=moscow_now
+    )
     updated_at: Mapped[DateTime] = mapped_column(
         DateTime(timezone=True),
         default=moscow_now,

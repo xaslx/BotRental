@@ -1,5 +1,6 @@
 from dataclasses import dataclass, field
 from datetime import datetime
+
 from src.const import MOSCOW_TZ
 from src.domain.common.entity import BaseEntity
 
@@ -22,7 +23,6 @@ class ReferralEntity(BaseEntity):
         referral_id: int,
         telegram_id: int,
     ) -> 'ReferralEntity':
-        
         return cls(
             referrer_id=referrer_id,
             referral_id=referral_id,
