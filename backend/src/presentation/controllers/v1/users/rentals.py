@@ -1,5 +1,8 @@
 from fastapi import APIRouter, status
 from dishka.integrations.fastapi import inject, FromDishka as Depends
+from src.application.use_cases.user.bot.start_bot import StartBotRentalUseCase
+from src.presentation.schemas.success import SuccessResponse
+from src.application.use_cases.user.bot.stop_bot import StopBotRentalUseCase
 from src.presentation.schemas.error import ErrorSchema
 from src.domain.bot.entity import BotRentalEntity
 from src.application.use_cases.user.bot.rent_bot import RentBotUseCase
@@ -48,22 +51,49 @@ async def rent_bot(
 
 
 @router.post(
-    '{bot_id}/stop',
+    '/{rental_id}/stop',
     description='Эндпоинт для остановки аренды',
     status_code=status.HTTP_200_OK,
+    responses={
+        status.HTTP_200_OK: {'model': SuccessResponse},
+        status.HTTP_401_UNAUTHORIZED: {'model': ErrorSchema, 'description': 'Пользователь не аутентифицирован'},
+        status.HTTP_403_FORBIDDEN: {'model': ErrorSchema, 'description': 'Недостаточно прав'},
+        status.HTTP_404_NOT_FOUND: {'model': ErrorSchema, 'description': 'Аренда не найдена'},
+        status.HTTP_400_BAD_REQUEST: {'model': ErrorSchema, 'description': 'Аренда уже остановлена.'},
+
+    },
 )
 @inject
-async def stop_active_rental():
-    ...
+async def stop_active_rental(
+    rental_id: int,
+    user: Depends[UserEntity],
+    use_case: Depends[StopBotRentalUseCase],
+) -> SuccessResponse:
+    
+    await use_case.execute(rental_id=rental_id, user=user)
+    return SuccessResponse(message='Аренда бота остановлена.')
 
 
 
 @router.post(
-    '{bot_id}/start',
+    '{rental_id}/start',
     description='Эндпоинт для продолжения аренды',
     status_code=status.HTTP_200_OK,
+    responses={
+        status.HTTP_200_OK: {'model': SuccessResponse},
+        status.HTTP_401_UNAUTHORIZED: {'model': ErrorSchema, 'description': 'Пользователь не аутентифицирован'},
+        status.HTTP_403_FORBIDDEN: {'model': ErrorSchema, 'description': 'Недостаточно прав'},
+        status.HTTP_404_NOT_FOUND: {'model': ErrorSchema, 'description': 'Аренда не найдена'},
+        status.HTTP_400_BAD_REQUEST: {'model': ErrorSchema, 'description': 'Аренда уже активна.'},
+
+    },
 )
 @inject
-async def start_active_rental():
-    ...
+async def start_active_rental(
+    rental_id: int,
+    user: Depends[UserEntity],
+    use_case: Depends[StartBotRentalUseCase],
+) -> SuccessResponse:
     
+    await use_case.execute(rental_id=rental_id, user=user)
+    return SuccessResponse(message='Аренда бота включена.')
